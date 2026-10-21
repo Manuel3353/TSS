@@ -23,6 +23,24 @@ body {
     background: #f7f7f9;
     color: #202020;
 }
+
+/* SCHOOL PHOTO BACKGROUND: shown only on the student, teacher and host login pages (before login) */
+#loginPage,
+#hostLoginPage,
+#teacherLoginPage {
+    min-height: 100vh;
+    background:
+        linear-gradient(rgba(0, 0, 70, 0.22), rgba(0, 0, 70, 0.22)),
+        url('school-background.jpg') center / cover no-repeat fixed !important;
+}
+/* Keep the school name readable on the photo without a box behind it */
+#loginPage .school-name {
+    text-shadow:
+        0 0 4px #fff,
+        0 0 8px #fff,
+        0 0 14px #fff;
+}
+
  
 button,
 input,
@@ -45,7 +63,7 @@ button {
 ========================================================= */
  
 :root {
- --blue: #172554;
+   --blue: #172554;
     --dark-blue: #172554;
     --light-blue: #505698;
     --purple-light: #dbeafe;
@@ -97,7 +115,10 @@ button {
     width: 120px;
     height: 120px;
     object-fit: contain;
+    background: #fff;
     border-radius: 50%;
+    padding: 6px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
 }
  
 .school-name {
@@ -150,6 +171,30 @@ button {
     .tss-sub { font-size: 14px; }
     .tss-brand-logo { width: 38px; height: 38px; }
 }
+
+/* Attendance rows */
+.att-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+    flex-wrap: wrap;
+}
+.att-name small { display: block; color: #777; }
+.att-btns { display: flex; gap: 8px; }
+.att-btn {
+    padding: 10px 16px;
+    min-width: 88px;
+    border-radius: 8px;
+    border: 2px solid #ccc;
+    background: #fff;
+    font-weight: 700;
+    cursor: pointer;
+}
+.att-btn.on-present { background: #1e8e3e; border-color: #1e8e3e; color: #fff; }
+.att-btn.on-absent { background: #d32f2f; border-color: #d32f2f; color: #fff; }
 
 /* Colours taken from the Trinity Stars School logo */
 .tss-c1 { color: #10A8F0; }
@@ -1212,6 +1257,8 @@ th {
  
         <img
             src="tss.png"
+            onclick="staffAccessTap()"
+            title="School crest"
             class="school-logo"
             alt="Trinity Stars School Crest"
             onerror="this.style.display='none'"
@@ -1289,13 +1336,6 @@ th {
  
             </div>
  
-            <div
-                class="host-link"
-                onclick="showHostLogin()">
- 
-                Host / Administrator Login
- 
-            </div>
  
         </div>
  
@@ -1474,23 +1514,30 @@ th {
  
         <div
             class="menu-card"
-            onclick="openStudentPage('teacher')">
-        <div
-              class="menu-card"
-              onclick="openStudentPage('clubs')">
-              <div class="menu-icon">🏅</div>
-              <h3>My Club Activities</h3>
+            onclick="openStudentPage('clubs')">
+
+            <div class="menu-icon">
+                🏅
+            </div>
+
+            <h3>
+                My Club Activities
+            </h3>
+
         </div>
 
- 
+        <div
+            class="menu-card"
+            onclick="openStudentPage('teacher')">
+
             <div class="menu-icon">
                 👨‍🏫
             </div>
- 
+
             <h3>
                 My Teacher
             </h3>
- 
+
         </div>
  
     </div>
@@ -1534,6 +1581,74 @@ th {
         </div>
  
     </div>
+ 
+</section>
+ 
+ 
+<!-- =========================================================
+     TEACHER LOGIN
+========================================================= -->
+ 
+<section
+    id="teacherLoginPage"
+    class="hidden">
+ 
+    <div class="header">
+        <div class="tss-brand">
+            <img src="tss.png" class="tss-brand-logo" alt="Trinity Stars School Crest" onerror="this.style.display='none'">
+            <span class="tss-badge" aria-label="Trinity Stars School"><span class="tss-c1">T</span><span class="tss-c2">R</span><span class="tss-c3">I</span><span class="tss-c4">N</span><span class="tss-c5">I</span><span class="tss-c6">T</span><span class="tss-c7">Y</span><span class="tss-rest"> STARS SCHOOL</span></span>
+            <span class="tss-sub">Teacher Portal</span>
+        </div>
+    </div>
+ 
+    <div class="host-login">
+ 
+        <h1>Teacher Login</h1>
+ 
+        <div class="input-group">
+            <input type="text" id="teacherLoginId" placeholder="Teacher ID">
+        </div>
+ 
+        <div class="input-group">
+            <input type="password" id="teacherLoginPassword" placeholder="Password">
+        </div>
+ 
+        <div id="teacherLoginMsg" class="inline-msg"></div>
+ 
+        <button class="login-btn" style="margin-top:20px" onclick="teacherLogin()">Login as Teacher</button>
+ 
+        <div class="forgot" onclick="teacherForgotPassword()">
+            Forgot your password? Type your Teacher ID above, then click here.
+        </div>
+ 
+        <button class="back-btn" style="margin-top:20px" onclick="hideTeacherLogin()">← Student Login</button>
+ 
+    </div>
+ 
+</section>
+ 
+ 
+<!-- =========================================================
+     TEACHER DASHBOARD
+========================================================= -->
+ 
+<section
+    id="teacherDashboard"
+    class="admin-page hidden">
+ 
+    <div class="admin-header">
+        <div class="tss-brand">
+            <img src="tss.png" class="tss-brand-logo" alt="Trinity Stars School Crest" onerror="this.style.display='none'">
+            <span class="tss-badge" aria-label="Trinity Stars School"><span class="tss-c1">T</span><span class="tss-c2">R</span><span class="tss-c3">I</span><span class="tss-c4">N</span><span class="tss-c5">I</span><span class="tss-c6">T</span><span class="tss-c7">Y</span><span class="tss-rest"> STARS SCHOOL</span></span>
+            <span class="tss-sub">Teacher Portal</span>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="logout-btn" onclick="changeTeacherPassword()">Change Password</button>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+ 
+    <div id="teacherMain" style="max-width:900px;margin:0 auto;padding:20px;"></div>
  
 </section>
  
@@ -1694,6 +1809,11 @@ th {
             <button
                 onclick="adminPage('reports', this)">
                 📊 Reports
+            </button>
+ 
+            <button
+                onclick="adminPage('attendance', this)">
+                📋 Attendance
             </button>
  
             <button
@@ -1936,23 +2056,87 @@ let graduates = [];
    CLASSES
 ========================================================= */
  
-const classes = [
- 
-    "KG 1",
-    "KG 2",
- 
-    "Basic 1",
-    "Basic 2",
-    "Basic 3",
-    "Basic 4",
-    "Basic 5",
-    "Basic 6",
- 
-    "JHS 1",
-    "JHS 2",
-    "JHS 3",
- 
+const CLASS_LAYOUT = [
+    { grade: "Creche", sections: [] },
+    { grade: "KG 1", sections: ["Marigold", "Orchid", "Sunflower"] },
+    { grade: "KG 2", sections: [] },
+    { grade: "Class 1", sections: [] },
+    { grade: "Class 2", sections: ["Tulip", "Azalea"] },
+    { grade: "Class 3", sections: ["Daisy", "Zinnia", "Rose"] },
+    { grade: "Class 4", sections: ["Petunia", "Lily", "Hibiscus"] },
+    { grade: "Class 5", sections: ["Daphne", "Flamboyant"] },
+    { grade: "Class 6", sections: ["Jasmine", "Begonia"] },
+    { grade: "JHS 1", sections: ["Dahlia", "Periwinkle"] },
+    { grade: "JHS 2", sections: ["Jacaranda", "Buttercup"] },
+    { grade: "JHS 3", sections: ["Lavender"] }
 ];
+
+const FLOWER_EMOJI = {
+    "Marigold": "🏵️",
+    "Orchid": "🌸",
+    "Sunflower": "🌻",
+    "Tulip": "🌷",
+    "Azalea": "💮",
+    "Daisy": "🌼",
+    "Zinnia": "💐",
+    "Rose": "🌹",
+    "Petunia": "🪴",
+    "Lily": "🪷",
+    "Hibiscus": "🌺",
+    "Daphne": "🌿",
+    "Flamboyant": "🌳",
+    "Jasmine": "🍃",
+    "Begonia": "🌱",
+    "Dahlia": "🥀",
+    "Periwinkle": "💠",
+    "Jacaranda": "💜",
+    "Buttercup": "🌼",
+    "Lavender": "🪻"
+};
+
+// Every classroom, for example "Creche Marigold", "KG 2", "Class 3 Rose".
+const classes = [];
+CLASS_LAYOUT.forEach(function (g) {
+    if (g.sections.length) g.sections.forEach(function (s) { classes.push(g.grade + " " + s); });
+    else classes.push(g.grade);
+});
+
+function gradeOf(name) {
+    const g = CLASS_LAYOUT.find(function (x) { return name === x.grade || String(name).indexOf(x.grade + " ") === 0; });
+    return g ? g.grade : "";
+}
+
+// Name with its flower emoji, for showing on screen.
+function classLabel(name) {
+    const grade = gradeOf(name);
+    const section = grade ? String(name).slice(grade.length).trim() : "";
+    return FLOWER_EMOJI[section] ? FLOWER_EMOJI[section] + " " + name : String(name || "");
+}
+
+function classOptionHTML(c, selected) {
+    return '<option value="' + c + '"' + (selected ? " selected" : "") + ">" + classLabel(c) + "</option>";
+}
+
+// Old class names (like "Basic 3" or "JHS 3") are matched to the new ones when that is unambiguous.
+function normalizeClassName(name) {
+    if (!name || classes.indexOf(name) !== -1) return name;
+    const n = String(name).replace(/^Basic\s+(\d)/i, "Class $1");
+    if (classes.indexOf(n) !== -1) return n;
+    const matches = classes.filter(function (c) { return c.indexOf(n + " ") === 0; });
+    return matches.length === 1 ? matches[0] : name;
+}
+
+function unplacedStudentsHTML() {
+    const list = students.filter(function (s) { return classes.indexOf(s.className) === -1; });
+    if (!list.length) return "";
+    return '<div class="admin-card" style="border-left:6px solid #d32f2f;margin-bottom:20px;">' +
+        "<h2>⚠️ Students who need a class (" + list.length + ")</h2>" +
+        '<p style="color:#777;margin-bottom:10px;">The classes changed. Press Edit and choose the right class for each student.</p>' +
+        list.map(function (s) {
+            return '<div class="admin-student"><div class="admin-student-info"><h3>' + escapeHTML(s.name || "") + "</h3><p>Old class: " + escapeHTML(s.className || "none") + "</p></div>" +
+                '<button class="success-btn" onclick="editStudent(\'' + s.id + '\')">Edit</button></div>';
+        }).join("") + "</div>";
+}
  
  
 /* =========================================================
@@ -2025,7 +2209,7 @@ let currentStudent = null;
 
 let cloudRole = null;                       // "admin" | "student" | null
 const cloudCache = { st: {}, files: {}, tt: {}, shared: null, self: null, cleared: false };
-const STUDENT_SELF_FIELDS = ["phone", "personalEmail", "alternativeEmail", "address", "parent", "photo", "seenAnnouncements"];
+const STUDENT_SELF_FIELDS = ["phone", "address", "parent", "photo", "seenAnnouncements"];
 const MAX_PDF_BYTES = 700 * 1024;           // Firestore documents are limited to 1 MB
 let syncTimer = null, syncing = false, syncAgain = false, lastSyncAlert = 0;
 let creatingStudent = false;
@@ -2073,8 +2257,9 @@ async function createCloudStudent(s) {
         // A second Firebase connection, so the admin stays logged in.
         second = firebase.initializeApp(firebaseConfig, "second-" + Date.now());
         const secondAuth = second.auth();
-        const cred = await secondAuth.createUserWithEmailAndPassword(s.email, s.password);
-        s.uid = cred.user.uid;
+        const made = await createAuthAccount(secondAuth, s.email, s.password, s.id);
+        s.uid = made.uid;
+        s.loginEmail = made.loginEmail;
         await secondAuth.signOut();
     } finally {
         if (second) { try { await second.delete(); } catch (e) {} }
@@ -2082,8 +2267,8 @@ async function createCloudStudent(s) {
     try {
         const batch = firebaseDb.batch();
         batch.set(firebaseDb.collection("students").doc(s.uid), cleanStudent(s, true));
-        batch.set(firebaseDb.collection("loginLookup").doc(lookupKey(s.id)), { email: s.email });
-        if (s.index) batch.set(firebaseDb.collection("loginLookup").doc(lookupKey(s.index)), { email: s.email });
+        batch.set(firebaseDb.collection("loginLookup").doc(lookupKey(s.id)), { email: s.loginEmail });
+        if (s.index) batch.set(firebaseDb.collection("loginLookup").doc(lookupKey(s.index)), { email: s.loginEmail });
         await batch.commit();
     } finally {
         creatingStudent = false;
@@ -2121,14 +2306,14 @@ async function adminResetStudentPassword(s, newPassword) {
     try {
         second = firebase.initializeApp(firebaseConfig, "reset-" + Date.now());
         const a = second.auth();
-        const cred = await a.signInWithEmailAndPassword(s.email, defaultStudentPassword(s));
+        const cred = await a.signInWithEmailAndPassword(s.loginEmail || s.email, defaultStudentPassword(s));
         await cred.user.updatePassword(newPassword);
         await a.signOut();
         return { ok: true };
     } catch (err) {
         // Otherwise, email the student a reset link.
         try {
-            await firebaseAuth.sendPasswordResetEmail(s.email);
+            await firebaseAuth.sendPasswordResetEmail(s.loginEmail || s.email);
             return { ok: false, emailed: true };
         } catch (e2) {
             return { ok: false, emailed: false, error: cloudErrorText(e2) };
@@ -2145,6 +2330,7 @@ async function adminCloudLoad() {
     const snap = await db.collection("students").get();
     cloudCache.st = {};
     cloudCache.files = {};
+    cloudCache.rosters = {};
     const cloud = [];
     await Promise.all(snap.docs.map(async function (d) {
         const s = d.data();
@@ -2164,6 +2350,8 @@ async function adminCloudLoad() {
         .concat(students.filter(function (x) { return !x.uid; }));
     graduates = cloud.filter(isGrad)
         .concat(graduates.filter(function (x) { return !x.uid; }));
+    // Match old class names to the new classes where that is clear.
+    students.forEach(function (x) { x.className = normalizeClassName(x.className); });
 
     const sh = await db.collection("portal").doc("shared").get();
     if (sh.exists) {
@@ -2173,6 +2361,7 @@ async function adminCloudLoad() {
         // Old clubs that are no longer in the list are cleared away.
         Object.keys(clubMemberships).forEach(function (k) { if (TSS_CLUBS.indexOf(k) === -1) delete clubMemberships[k]; });
         teachers = d.teachers || [];
+        termDates = d.termDates || { name: "", start: "", end: "" };
         cloudCache.shared = JSON.stringify({ announcements: announcements, teachers: teachers });
     } else {
         cloudCache.shared = null;
@@ -2249,7 +2438,7 @@ async function syncAdmin() {
     const db = firebaseDb;
 
     // Announcements + teachers
-    const sharedJson = JSON.stringify({ announcements: announcements, teachers: teachers, clubMemberships: clubMemberships });
+    const sharedJson = JSON.stringify({ announcements: announcements, teachers: teachers, clubMemberships: clubMemberships, termDates: termDates });
     if (sharedJson !== cloudCache.shared) {
         await db.collection("portal").doc("shared").set(JSON.parse(sharedJson));
         cloudCache.shared = sharedJson;
@@ -2300,6 +2489,29 @@ async function syncAdmin() {
             await db.collection("students").doc(s.uid).set(JSON.parse(j), { merge: true });
             cloudCache.st[s.uid] = j;
         }
+    }
+
+    // Class lists for the teacher portal (only names and IDs). A failure here never blocks other saving.
+    try {
+        cloudCache.rosters = cloudCache.rosters || {};
+        const rosterMap = {};
+        classes.forEach(function (c) { rosterMap[classKeyOf(c)] = { className: c, students: [] }; });
+        students.forEach(function (s) {
+            if (!s.uid || !s.className) return;
+            const k = classKeyOf(s.className);
+            if (!rosterMap[k]) rosterMap[k] = { className: s.className, students: [] };
+            rosterMap[k].students.push({ uid: s.uid, id: s.id || "", name: s.name || "" });
+        });
+        for (const k of Object.keys(rosterMap)) {
+            rosterMap[k].students.sort(function (a, b) { return String(a.name).localeCompare(String(b.name)); });
+            const j = JSON.stringify(rosterMap[k]);
+            if (cloudCache.rosters[k] !== j) {
+                await db.collection("rosters").doc(k).set(JSON.parse(j));
+                cloudCache.rosters[k] = j;
+            }
+        }
+    } catch (err) {
+        console.warn("Could not update the teacher class lists (check the Firestore rules):", err);
     }
 
     // Local copies of cloud data are no longer needed after the first successful upload.
@@ -2360,6 +2572,7 @@ function resetCloudState() {
     clearTimeout(syncTimer);
     cloudCache.st = {}; cloudCache.files = {}; cloudCache.tt = {}; cloudCache.shared = null; cloudCache.self = null;
     students = []; graduates = []; teachers = []; announcements = []; timetables = { lecture: {}, exam: {} };
+    termDates = { name: "", start: "", end: "" }; cloudCache.rosters = {};
     clubMemberships = {};
     loadData();
 }
@@ -2602,7 +2815,7 @@ async function studentLogin() {
     if (!loginValue || !password) {
         showInline(
             "studentLoginMsg",
-            "Please enter your Student ID/Index Number/Email and Password.",
+            "Please enter your Student ID or Email and Password.",
             "error"
         );
         return;
@@ -2669,7 +2882,7 @@ async function studentLogin() {
         let message;
         if (code === "auth/invalid-credential" || code === "auth/wrong-password" ||
             code === "auth/user-not-found" || code === "auth/invalid-email") {
-            message = "Incorrect Student ID/Index Number/Email or Password.";
+            message = "Incorrect Student ID or Email, or Password.";
         } else {
             message = cloudErrorText(err);
         }
@@ -2700,27 +2913,20 @@ function updateStudentHeader() {
     document
         .getElementById("studentEmail")
         .textContent =
-        (
-            currentStudent.personalEmail &&
-            currentStudent.personalEmail !== "None"
-            ? currentStudent.personalEmail
-            : currentStudent.email
-        );
+        (currentStudent.loginEmail || currentStudent.email);
  
  
     document
         .getElementById("studentIndex")
         .textContent =
-        currentStudent.index
-        ? "Index Number: " + currentStudent.index
-        : "Student ID: " + currentStudent.id;
+        "Student ID: " + currentStudent.id;
  
  
     document
         .getElementById("studentClass")
         .textContent =
         "Class: " +
-        currentStudent.className;
+        classLabel(currentStudent.className);
  
     updateNotificationUI();
  
@@ -2761,6 +2967,36 @@ function forgotPassword() {
    HOST LOGIN
 ========================================================= */
  
+/* Hidden staff access: tap the school crest 5 times within 3 seconds. */
+let staffLogoTapCount = 0;
+let staffLogoTapTimer = null;
+
+async function staffAccessTap() {
+    staffLogoTapCount++;
+    if (staffLogoTapTimer) clearTimeout(staffLogoTapTimer);
+    staffLogoTapTimer = setTimeout(() => { staffLogoTapCount = 0; }, 3000);
+    if (staffLogoTapCount < 5) return;
+    staffLogoTapCount = 0;
+    clearTimeout(staffLogoTapTimer);
+
+    // In-page popup (not the browser's own box). What is typed stays hidden.
+    const input = document.getElementById("portalDialogInput");
+    if (input) input.type = "password";
+    let answer = null;
+    try {
+        answer = await appPrompt("Staff access");
+    } finally {
+        if (input) input.type = "text";
+    }
+
+    const choice = String(answer || "").trim().toUpperCase();
+    if (choice === "HOST") {
+        showHostLogin();
+    } else if (choice === "TEACHER") {
+        showTeacherLogin();
+    }
+}
+
 function showHostLogin() {
  
     clearInline("studentLoginMsg");
@@ -2919,7 +3155,13 @@ function logoutInner() {
     }
  
     currentStudent = null;
+    currentTeacher = null;
+    teacherRoster = [];
+    teacherMarks = {};
+    teacherToday = null;
  
+    document.getElementById("teacherDashboard").classList.add("hidden");
+    document.getElementById("teacherLoginPage").classList.add("hidden");
  
     document
         .getElementById("studentDashboard")
@@ -3117,10 +3359,6 @@ function renderStudentAccount(box, tab) {
  
                     ${editField("Mobile Number (type None if you have none)", "upPhone", s.phone)}
  
-                    ${editField("Personal Email (type None if you have none)", "upPersonalEmail", s.personalEmail)}
- 
-                    ${editField("Alternative Email", "upAltEmail", s.alternativeEmail)}
- 
                     ${editField("Address", "upAddress", s.address)}
  
                     ${editField("Parent Name", "upParentName", s.parent?.name)}
@@ -3189,21 +3427,11 @@ function renderStudentAccount(box, tab) {
  
         ${s.index ? detailCard("Index Number", s.index) : ""}
  
-        ${detailCard("Class", s.className)}
+        ${detailCard("Class", classLabel(s.className))}
  
         ${detailCard("Session", s.session)}
  
         ${detailCard("Mobile Number", s.phone)}
- 
-        ${detailCard(
-            "Personal Email",
-            s.personalEmail
-        )}
- 
-        ${detailCard(
-            "Alternative Email",
-            s.alternativeEmail || "Not provided"
-        )}
  
         ${detailCard(
             "Country of Origin",
@@ -3276,12 +3504,6 @@ function saveStudentDetails(event) {
  
     s.phone =
         document.getElementById("upPhone").value.trim();
- 
-    s.personalEmail =
-        document.getElementById("upPersonalEmail").value.trim();
- 
-    s.alternativeEmail =
-        document.getElementById("upAltEmail").value.trim();
  
     s.address =
         document.getElementById("upAddress").value.trim();
@@ -3906,7 +4128,7 @@ function renderStudentTimetable(box, type, title) {
         </h2>
  
         <p style="margin-bottom:25px;color:#777;">
-            Class: ${currentStudent.className}
+            Class: ${classLabel(currentStudent.className)}
         </p>
  
         ${body}
@@ -4130,7 +4352,7 @@ function renderStudentTeacher(box) {
         </h2>
  
         <p style="margin-bottom:25px;color:#777;">
-            Class: ${currentStudent.className}
+            Class: ${classLabel(currentStudent.className)}
         </p>
  
         ${
@@ -4203,7 +4425,7 @@ function openClub(clubName) {
       </div>`;
 }
 function openAddClubStudents(clubName) {
-    const classOptions = classes.map(c=>`<option value="${escapeClubText(c)}">${escapeClubText(c)}</option>`).join('');
+    const classOptions = classes.map(c=>classOptionHTML(c)).join('');
     const studentOptions = students.filter(s=>!s.hasGraduated || s.hasGraduated!=='Yes').map(s=>`<label style="display:block;padding:10px;border-bottom:1px solid #eee"><input type="checkbox" class="club-student-check" value="${escapeClubText(s.uid || s.id)}"> ${escapeClubText(s.name)} <small>(${escapeClubText(s.className || '')})</small></label>`).join('');
     document.getElementById('modalBox').innerHTML = `<button class="close-modal" onclick="closeModal()">×</button><h2>Add Students to ${clubLabel(clubName)}</h2>
       <p>Select a class, then tick one or more students. You can also add a student by name.</p>
@@ -4337,6 +4559,12 @@ function adminPage(page, button) {
     else if (page === "settings") {
  
         renderSettings();
+ 
+    }
+ 
+    else if (page === "attendance") {
+ 
+        renderAdminAttendance();
  
     }
  
@@ -4510,72 +4738,113 @@ function renderAdminDashboard() {
 ========================================================= */
  
 function renderClasses() {
- 
-    const main =
-        document.getElementById("adminMain");
- 
- 
+    const main = document.getElementById("adminMain");
     main.innerHTML = `
- 
-        <h1 style="color:#211d59;margin-bottom:25px;">
-            Classes
-        </h1>
- 
+        <h1 style="color:#211d59;margin-bottom:10px;">Classes</h1>
+        <p style="color:#777;margin-bottom:20px;">Choose a class level to view its sections and student counts.</p>
         <div class="form-buttons" style="margin-bottom:20px;">
- 
-            <select
-                id="addStudentClassSelect"
-                style="padding:12px;border:1px solid #ccc;border-radius:8px;">
- 
-                ${classes.map(c => `<option>${c}</option>`).join("")}
- 
+            <select id="addStudentClassSelect" style="padding:12px;border:1px solid #ccc;border-radius:8px;">
+                ${classes.map(c => classOptionHTML(c)).join("")}
             </select>
- 
-            <button
-                class="success-btn"
-                onclick="showAddStudentForm(document.getElementById('addStudentClassSelect').value)">
- 
-                + Add Student
- 
-            </button>
- 
+            <button class="success-btn" onclick="showAddStudentForm(document.getElementById('addStudentClassSelect').value)">+ Add Student</button>
         </div>
- 
+        ${unplacedStudentsHTML()}
         <div class="class-grid">
- 
-            ${classes.map(className => {
- 
-                const count =
-                    students.filter(
-                        s => s.className === className
-                    ).length;
- 
- 
-                return `
- 
-                    <div
-                        class="class-card"
-                        onclick="openClass('${className}')">
- 
-                        <h3>
-                            ${className}
-                        </h3>
- 
-                        <p>
-                            ${count} Student(s)
-                        </p>
- 
-                    </div>
- 
-                `;
- 
+            ${CLASS_LAYOUT.map(g => {
+                const members = classes.filter(c => gradeOf(c) === g.grade);
+                const count = students.filter(s => gradeOf(s.className || "") === g.grade).length;
+                return `<div class="class-card" onclick="openGrade('${g.grade}')">
+                    <h3>${g.grade}</h3><p>${count} student(s)</p>
+                    <small>${members.length > 1 ? members.length + " sections" : "Open class"}</small>
+                </div>`;
             }).join("")}
- 
-        </div>
- 
-    `;
- 
+        </div>`;
 }
+
+function openGrade(grade) {
+    const main = document.getElementById("adminMain");
+    const sections = classes.filter(c => gradeOf(c) === grade);
+    main.innerHTML = `
+        <button class="back-btn" onclick="renderClasses()">← Classes</button>
+        <h1 style="color:#211d59;margin-bottom:10px;">${grade}</h1>
+        <p style="color:#777;margin-bottom:25px;">Select a section to see the students in it.</p>
+        <div class="class-grid">
+            ${sections.map(c => {
+                const count = students.filter(s => s.className === c).length;
+                return `<div class="class-card" onclick="openClass('${c}')">
+                    <h3>${classLabel(c)}</h3><p>${count} student(s)</p>
+                </div>`;
+            }).join("")}
+        </div>`;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  
  
 /* =========================================================
@@ -4606,7 +4875,7 @@ function openClass(className) {
  
  
         <h1 style="color:#211d59;margin-bottom:10px;">
-            ${className}
+            ${classLabel(className)}
         </h1>
  
         <p style="color:#777;margin-bottom:25px;">
@@ -4765,7 +5034,7 @@ function filterClassStudents(className) {
             (
                 s.name.toLowerCase().includes(search)
                 ||
-                s.index.includes(search)
+                String(s.index || "").includes(search)
                 ||
                 s.id.toLowerCase().includes(search)
             )
@@ -4815,24 +5084,8 @@ function showAddStudentForm(className) {
                 </div>
  
  
-                ${
-                    className === "JHS 3"
-                    ?
-                    `
                 <div class="form-field">
-                    <label>Index Number</label>
-                    <input
-                        id="newIndex"
-                        required>
-                </div>
-                    `
-                    :
-                    ""
-                }
- 
- 
-                <div class="form-field">
-                    <label>Email</label>
+                    <label>Email (can be the same as a brother's, sister's or parent's)</label>
                     <input
                         type="email"
                         id="newEmail"
@@ -4894,22 +5147,6 @@ function showAddStudentForm(className) {
                             style="width:auto;"
                             onchange="toggleNone('newPhone', this)">
                         None (student has no number)
-                    </label>
-                </div>
- 
- 
-                <div class="form-field">
-                    <label>Personal Email</label>
-                    <input
-                        type="email"
-                        id="newPersonalEmail">
-                    <label style="font-weight:normal;margin:8px 0 0;display:flex;align-items:center;gap:8px;">
-                        <input
-                            type="checkbox"
-                            id="newPersonalEmailNone"
-                            style="width:auto;"
-                            onchange="toggleNone('newPersonalEmail', this)">
-                        None (student has no personal email)
                     </label>
                 </div>
  
@@ -5189,10 +5426,6 @@ async function finishAddStudent(className, photo) {
     const phoneNone =
         document.getElementById("newPhoneNone").checked;
  
-    const emailNone =
-        document.getElementById("newPersonalEmailNone").checked;
- 
- 
     const newStudent = {
  
         id:
@@ -5238,13 +5471,6 @@ async function finishAddStudent(className, photo) {
             phoneNone
             ? "None"
             : document.getElementById("newPhone").value,
- 
-        personalEmail:
-            emailNone
-            ? "None"
-            : document.getElementById("newPersonalEmail").value,
- 
-        alternativeEmail: "",
  
         country: "Ghana",
  
@@ -5322,7 +5548,7 @@ async function finishAddStudent(className, photo) {
     ) {
  
         appAlert(
-            "Student ID or Index Number already exists."
+            "A student with this Student ID already exists."
         );
  
         return;
@@ -5338,6 +5564,12 @@ async function finishAddStudent(className, photo) {
         return;
     }
 
+    const pendingAdmission = JSON.parse(localStorage.getItem("TSS_pendingAdmission") || "null");
+    if (pendingAdmission && pendingAdmission.className === className) {
+        newStudent.admissionDate = pendingAdmission.admissionDate;
+        newStudent.admittedAt = pendingAdmission.admittedAt || new Date().toLocaleString();
+        localStorage.removeItem("TSS_pendingAdmission");
+    }
     students.push(newStudent);
     saveData();
  
@@ -5395,7 +5627,7 @@ function viewStudent(id) {
  
         ${detailCard("Password", s.password)}
  
-        ${detailCard("Class", s.className)}
+        ${detailCard("Class", classLabel(s.className))}
  
         ${detailCard("Gender", s.gender)}
  
@@ -5403,7 +5635,7 @@ function viewStudent(id) {
  
         ${detailCard("Phone", s.phone)}
  
-        ${detailCard("Email", s.personalEmail || s.email)}
+        ${detailCard("Email", s.email)}
  
         ${detailCard("Address", s.address)}
  
@@ -5505,9 +5737,7 @@ function editStudent(id) {
  
                 ${editField("Full Name", "editName", s.name)}
  
-                ${editField("Index Number", "editIndex", s.index)}
- 
-                ${editField("Email", "editEmail", s.email)}
+                ${editField("Email (contact only, can be shared)", "editEmail", s.email)}
  
                 ${editField("Student ID", "editID", s.id)}
  
@@ -5516,19 +5746,6 @@ function editStudent(id) {
                 ${editField("Date of Birth", "editDOB", s.dob, "date")}
  
                 ${editField("Mobile Number", "editPhone", s.phone)}
- 
-                ${editField(
-                    "Personal Email",
-                    "editPersonalEmail",
-                    s.personalEmail
-                )}
- 
-                ${editField(
-                    "Alternative Email",
-                    "editAlternativeEmail",
-                    s.alternativeEmail,
-                    "email"
-                )}
  
                 ${editField(
                     "Address",
@@ -5559,14 +5776,7 @@ function editStudent(id) {
                     <select id="editClass">
  
                         ${
-                            classes.map(c => `
- 
-                                <option
-                                    ${c === s.className ? "selected" : ""}>
-                                    ${c}
-                                </option>
- 
-                            `).join("")
+                            classes.map(c => classOptionHTML(c, c === s.className)).join("")
                         }
  
                     </select>
@@ -5686,9 +5896,6 @@ function saveEditedStudent(event, id) {
     s.id =
         document.getElementById("editID").value;
  
-    s.index =
-        document.getElementById("editIndex").value;
- 
     s.email =
         document.getElementById("editEmail").value;
  
@@ -5706,12 +5913,6 @@ function saveEditedStudent(event, id) {
  
     s.phone =
         document.getElementById("editPhone").value;
- 
-    s.personalEmail =
-        document.getElementById("editPersonalEmail").value;
- 
-    s.alternativeEmail =
-        document.getElementById("editAlternativeEmail").value;
  
     s.address =
         document.getElementById("editAddress").value;
@@ -6230,7 +6431,7 @@ function filterAdminResults() {
  
             ||
  
-            s.index.includes(search)
+            String(s.index || "").includes(search)
  
         );
  
@@ -6288,7 +6489,7 @@ function renderAdminFees() {
                         onclick="openFeesClass('${c}')">
  
                         <h3>
-                            ${c}
+                            ${classLabel(c)}
                         </h3>
  
                         <p>
@@ -6336,7 +6537,7 @@ function openFeesClass(className) {
  
  
         <h1 style="color:#211d59;margin-bottom:10px;">
-            ${className}
+            ${classLabel(className)}
         </h1>
  
         <p style="color:#777;margin-bottom:25px;">
@@ -6455,7 +6656,7 @@ function filterFees(className) {
                 (
                     s.name.toLowerCase().includes(search)
                     ||
-                    s.index.includes(search)
+                    String(s.index || "").includes(search)
                     ||
                     s.id.toLowerCase().includes(search)
                 )
@@ -6539,239 +6740,61 @@ function editFees(id) {
  
  
 function saveFees(id) {
- 
-    const s =
-        students.find(
-            student => student.id === id
-        );
- 
- 
-    s.fees = {
- 
-        total:
-            Number(
-                document.getElementById("feeTotal").value
-            ),
- 
-        paid:
-            Number(
-                document.getElementById("feePaid").value
-            )
- 
-    };
- 
- 
+    const s = students.find(student => student.id === id);
+    if (!s) return;
+    const total = Number(document.getElementById("feeTotal").value || 0);
+    const paid = Number(document.getElementById("feePaid").value || 0);
+    const previousPaid = Number(s.fees?.paid || 0);
+    const increase = paid - previousPaid;
+    s.fees = { total, paid };
+    if (!Array.isArray(s.feePayments)) s.feePayments = [];
+    if (increase > 0) {
+        s.feePayments.push({
+            amount: increase,
+            date: new Date().toISOString().slice(0,10),
+            term: getTerm(),
+            academicYear: getAcademicYear(),
+            recordedAt: new Date().toLocaleString()
+        });
+    }
     saveData();
- 
     closeModal();
- 
     openFeesClass(s.className);
- 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  
  
 /* =========================================================
    TEACHERS
 ========================================================= */
- 
-function renderTeachers() {
- 
-    const main =
-        document.getElementById("adminMain");
- 
- 
-    main.innerHTML = `
- 
-        <h1 style="color:#211d59;margin-bottom:25px;">
-            Teachers
-        </h1>
- 
- 
-        <button
-            class="success-btn"
-            onclick="showAddTeacher()">
- 
-            + Add Teacher
- 
-        </button>
- 
- 
-        <div
-            class="admin-card"
-            style="margin-top:20px;">
- 
-            ${
-                teachers.map(t => `
- 
-                    <div class="admin-student">
- 
-                        <div class="admin-student-info">
- 
-                            <h3>
-                                ${t.name}
-                            </h3>
- 
-                            <p>
-                                ${t.subject}
-                            </p>
- 
-                            <p>
-                                ${t.className}
-                            </p>
- 
-                            <p>
-                                ${t.phone}
-                            </p>
- 
-                            <p>
-                                ${t.email}
-                            </p>
- 
-                        </div>
- 
-                        <button
-                            class="danger-btn"
-                            onclick="removeTeacher('${t.id}')">
- 
-                            Remove
- 
-                        </button>
- 
-                    </div>
- 
-                `).join("")
-            }
- 
-        </div>
- 
-    `;
- 
-}
- 
- 
-function showAddTeacher() {
- 
-    openModal(`
- 
-        <button
-            class="close-modal"
-            onclick="closeModal()">
-            ×
-        </button>
- 
-        <h2>
-            Add Teacher
-        </h2>
- 
- 
-        <div class="form-grid">
- 
-            ${editField("Name", "teacherName", "")}
- 
-            ${editField("Phone", "teacherPhone", "")}
- 
-            ${editField(
-                "Email",
-                "teacherEmail",
-                "",
-                "email"
-            )}
- 
-            <div class="form-field">
- 
-                <label>
-                    Class
-                </label>
- 
-                <select id="teacherClass">
- 
-                    ${classes.map(c =>
-                        `<option>${c}</option>`
-                    ).join("")}
- 
-                </select>
- 
-            </div>
- 
-            ${editField(
-                "Subject",
-                "teacherSubject",
-                ""
-            )}
- 
-        </div>
- 
- 
-        <div class="form-buttons">
- 
-            <button
-                class="success-btn"
-                onclick="addTeacher()">
- 
-                Add Teacher
- 
-            </button>
- 
-        </div>
- 
-    `);
- 
-}
- 
- 
-function addTeacher() {
- 
-    teachers.push({
- 
-        id:
-            "T" +
-            Date.now(),
- 
-        name:
-            document.getElementById("teacherName").value,
- 
-        phone:
-            document.getElementById("teacherPhone").value,
- 
-        email:
-            document.getElementById("teacherEmail").value,
- 
-        className:
-            document.getElementById("teacherClass").value,
- 
-        subject:
-            document.getElementById("teacherSubject").value
- 
-    });
- 
- 
-    saveData();
- 
-    closeModal();
- 
-    renderTeachers();
- 
-}
- 
- 
-async function removeTeacher(id) {
- 
-    if (!await appConfirm("Remove this teacher?")) {
- 
-        return;
- 
-    }
- 
- 
-    teachers =
-        teachers.filter(t => t.id !== id);
- 
-    saveData();
- 
-    renderTeachers();
- 
-}
- 
  
 /* =========================================================
    ANNOUNCEMENTS
@@ -6826,7 +6849,7 @@ function renderAdminAnnouncements() {
                     onclick="openAnnouncementTarget('${c}')">
  
                     <h3>
-                        ${c}
+                        ${classLabel(c)}
                     </h3>
  
                     <p>
@@ -7121,7 +7144,7 @@ function renderAdminTimetables(type) {
                         <div class="admin-student-info">
  
                             <h3>
-                                ${c}
+                                ${classLabel(c)}
                             </h3>
  
                             <p>
@@ -7305,42 +7328,74 @@ async function deleteTimetable(type, className) {
 ========================================================= */
  
 function renderAdmissions() {
- 
-    const main =
-        document.getElementById("adminMain");
- 
- 
+    const main = document.getElementById("adminMain");
+    const admitted = students.filter(s => s.admissionDate || s.admittedAt)
+        .slice().sort((a,b) => new Date(b.admissionDate || b.admittedAt) - new Date(a.admissionDate || a.admittedAt));
     main.innerHTML = `
- 
-        <h1 style="color:#211d59;margin-bottom:25px;">
-            Admissions
-        </h1>
- 
- 
+        <h1 style="color:#211d59;margin-bottom:20px;">Admissions</h1>
         <div class="admin-card">
- 
-            <h2>
-                New Admission
-            </h2>
- 
-            <p style="color:#777;margin-bottom:20px;">
-                Use the Classes section to create the full
-                student account after admission.
-            </p>
- 
-            <button
-                class="primary-btn"
-                onclick="renderClasses()">
- 
-                Go To Classes & Add Student
- 
-            </button>
- 
+            <h2>Register a New Admission</h2>
+            <p style="color:#777;margin-bottom:18px;">New students should be recorded here. Existing students can still be added directly from Classes.</p>
+            <div class="form-grid">
+                <div class="form-field"><label>Student name</label><input id="admissionStudentName" placeholder="Full name"></div>
+                <div class="form-field"><label>Class / section</label><select id="admissionClass">${classes.map(c=>classOptionHTML(c)).join("")}</select></div>
+                <div class="form-field"><label>Admission date</label><input id="admissionDate" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+            </div>
+            <div class="form-buttons">
+                <button class="primary-btn" onclick="startAdmission()">Continue to Add Student</button>
+            </div>
         </div>
- 
-    `;
- 
+        <div class="admin-card">
+            <h2>Admission Register</h2>
+            ${admitted.length ? `<div class="table-wrapper"><table><thead><tr><th>Student</th><th>Class</th><th>Admission date</th><th>Recorded at</th></tr></thead><tbody>
+            ${admitted.map(s=>`<tr><td>${s.firstName || ""} ${s.middleName || ""} ${s.lastName || s.name || ""}</td><td>${classLabel(s.className || "")}</td><td>${s.admissionDate || ""}</td><td>${s.admittedAt || ""}</td></tr>`).join("")}
+            </tbody></table></div>` : `<div class="empty">No admissions have been recorded yet.</div>`}
+        </div>`;
 }
+function startAdmission() {
+    const name = document.getElementById("admissionStudentName").value.trim();
+    const className = document.getElementById("admissionClass").value;
+    const admissionDate = document.getElementById("admissionDate").value;
+    if (!name || !admissionDate) { appAlert("Enter the student's name and admission date first."); return; }
+    localStorage.setItem("TSS_pendingAdmission", JSON.stringify({name, className, admissionDate, admittedAt:new Date().toLocaleString()}));
+    showAddStudentForm(className);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  
  
 /* =========================================================
@@ -7348,125 +7403,162 @@ function renderAdmissions() {
 ========================================================= */
  
 function renderReports() {
- 
-    const main =
-        document.getElementById("adminMain");
- 
- 
-    const totalFees =
-        students.reduce(
-            (sum, s) =>
-                sum + Number(s.fees?.total || 0),
-            0
-        );
- 
- 
-    const totalPaid =
-        students.reduce(
-            (sum, s) =>
-                sum + Number(s.fees?.paid || 0),
-            0
-        );
- 
- 
+    const main = document.getElementById("adminMain");
+    const totalFees = students.reduce((sum,s)=>sum+Number(s.fees?.total||0),0);
+    const totalPaid = students.reduce((sum,s)=>sum+Number(s.fees?.paid||0),0);
+    const totalStudents = students.length;
+    const payments = students.flatMap(s => (s.feePayments || []).map(p => ({...p, studentName:s.name || [s.firstName,s.middleName,s.lastName].filter(Boolean).join(" ")})));
+    const now = new Date();
+    const monthKey = now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");
+    const monthlyPaid = payments.filter(p => String(p.date || "").slice(0,7) === monthKey).reduce((n,p)=>n+Number(p.amount||0),0);
+    const currentTerm = getTerm();
+    const termPaid = payments.filter(p => p.academicYear === getAcademicYear() && p.term === currentTerm).reduce((n,p)=>n+Number(p.amount||0),0);
+    const money = n => "GHS " + Number(n||0).toFixed(2);
     main.innerHTML = `
- 
-        <h1 style="color:#211d59;margin-bottom:25px;">
-            Reports
-        </h1>
- 
- 
-        <div class="admin-card">
- 
-            <h2>
-                Student Population
-            </h2>
- 
- 
-            <div class="table-wrapper">
- 
-                <table>
- 
-                    <thead>
- 
-                        <tr>
-                            <th>Class</th>
-                            <th>Students</th>
-                        </tr>
- 
-                    </thead>
- 
-                    <tbody>
- 
-                        ${classes.map(c => `
- 
-                            <tr>
- 
-                                <td>
-                                    ${c}
-                                </td>
- 
-                                <td>
-                                    ${
-                                        students.filter(
-                                            s =>
-                                            s.className === c
-                                        ).length
-                                    }
-                                </td>
- 
-                            </tr>
- 
-                        `).join("")}
- 
-                    </tbody>
- 
-                </table>
- 
-            </div>
- 
+        <h1 style="color:#211d59;margin-bottom:25px;">Reports & School Finance</h1>
+        <div class="admin-stat-grid" style="margin-bottom:20px;">
+            <div class="stat-card"><div>Total Students in School</div><div class="stat-number">${totalStudents}</div></div>
+            <div class="stat-card"><div>Fees Collected This Month</div><div class="stat-number" style="font-size:24px;">${money(monthlyPaid)}</div></div>
+            <div class="stat-card"><div>Fees Collected This Term</div><div class="stat-number" style="font-size:24px;">${money(termPaid)}</div></div>
+            <div class="stat-card"><div>Total Fees Outstanding</div><div class="stat-number" style="font-size:24px;">${money(totalFees-totalPaid)}</div></div>
         </div>
- 
- 
-        <div class="admin-card">
- 
-            <h2>
-                Fees Summary
-            </h2>
- 
-            <p>
-                Total Fees:
-                <strong>
-                    GHS ${totalFees.toFixed(2)}
-                </strong>
-            </p>
- 
-            <p style="margin-top:10px;">
-                Collected:
-                <strong>
-                    GHS ${totalPaid.toFixed(2)}
-                </strong>
-            </p>
- 
-            <p style="margin-top:10px;">
-                Outstanding:
-                <strong>
-                    GHS ${(totalFees - totalPaid).toFixed(2)}
-                </strong>
-            </p>
- 
+        <div class="admin-card"><h2>Student Population by Class</h2>
+            <div class="table-wrapper"><table><thead><tr><th>Class</th><th>Students</th></tr></thead><tbody>
+            ${CLASS_LAYOUT.map(g=>`<tr><td>${g.grade}</td><td>${students.filter(s=>gradeOf(s.className||"")===g.grade).length}</td></tr>`).join("")}
+            <tr><th>Total Students in School</th><th>${totalStudents}</th></tr>
+            </tbody></table></div>
         </div>
- 
-    `;
- 
+        <div class="admin-card"><h2>Fees Summary</h2>
+            <p>Total fees billed: <strong>${money(totalFees)}</strong></p>
+            <p style="margin-top:10px;">Total collected to date: <strong>${money(totalPaid)}</strong></p>
+            <p style="margin-top:10px;">Outstanding balance: <strong>${money(totalFees-totalPaid)}</strong></p>
+            <p style="margin-top:10px;color:#777;">Monthly and term totals use recorded fee-payment transactions. When entering fees, record each payment so the report can track its date and term.</p>
+        </div>
+        <div class="admin-card"><h2>Recent Fee Payments</h2>
+            ${payments.length ? `<div class="table-wrapper"><table><thead><tr><th>Date</th><th>Student</th><th>Amount</th><th>Term</th><th>Academic year</th></tr></thead><tbody>
+            ${payments.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).map(p=>`<tr><td>${p.date||""}</td><td>${p.studentName||""}</td><td>${money(p.amount)}</td><td>${p.term||""}</td><td>${p.academicYear||""}</td></tr>`).join("")}
+            </tbody></table></div>` : `<div class="empty">No individual fee-payment transactions recorded yet. Existing student fee totals remain visible above.</div>`}
+        </div>`;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  
  
 /* =========================================================
    PROMOTE / REPEAT / GRADUATE
 ========================================================= */
  
-const LAST_CLASS = classes[classes.length - 1];
+const LAST_GRADE = CLASS_LAYOUT[CLASS_LAYOUT.length - 1].grade;
  
  
 function getAcademicYear() {
@@ -7497,7 +7589,7 @@ function promoteButtonHTML(s) {
     if (!isLastTerm()) return "";
  
     const label =
-        s.className === LAST_CLASS
+        gradeOf(s.className) === LAST_GRADE
         ? "Graduate / Repeat"
         : "Promote / Repeat";
  
@@ -7575,7 +7667,7 @@ function showPromotion(id) {
  
     }
  
-    else if (s.className === LAST_CLASS) {
+    else if (gradeOf(s.className) === LAST_GRADE) {
  
         body = `
  
@@ -7609,11 +7701,13 @@ function showPromotion(id) {
  
                 <select id="promoteToClass">
  
-                    ${classes.map((c, i) =>
-                        c === s.className
-                        ? ""
-                        : `<option value="${c}" ${i === idx + 1 ? "selected" : ""}>${c}</option>`
-                    ).join("")}
+                    ${(function () {
+                        const here = gradeOf(s.className);
+                        const first = classes.findIndex(function (x, j) { return j > idx && gradeOf(x) !== here; });
+                        return classes.map(function (c, i) {
+                            return gradeOf(c) === here ? "" : classOptionHTML(c, i === first);
+                        }).join("");
+                    })()}
  
                 </select>
  
@@ -7654,7 +7748,7 @@ function showPromotion(id) {
  
         ${detailCard("Name", s.name)}
  
-        ${detailCard("Current Class", s.className)}
+        ${detailCard("Current Class", classLabel(s.className))}
  
         ${detailCard("Academic Year", year + ", " + getTerm())}
  
@@ -7866,7 +7960,7 @@ function renderGraduates() {
             :
             `<div class="empty">
                 No graduates yet. Students who complete
-                ${LAST_CLASS} appear here after you press Graduate.
+                ${LAST_GRADE} appear here after you press Graduate.
             </div>`
         }
  
@@ -8144,6 +8238,751 @@ function saveSettings() {
  
  
 /* =========================================================
+   LOGIN ADDRESSES (many students can share one family email)
+========================================================= */
+
+// Firebase allows only one login per email address. When a family email is already used,
+// the login address becomes name+TAG@domain, which still arrives in the same inbox.
+function taggedEmail(email, tag) {
+    const parts = String(email).split("@");
+    const base = parts[0].split("+")[0];
+    const clean = String(tag || "").toLowerCase().replace(/[^a-z0-9]/g, "") || String(Date.now());
+    return base + "+" + clean + "@" + parts.slice(1).join("@");
+}
+
+async function createAuthAccount(authInstance, email, password, tag) {
+    try {
+        const cred = await authInstance.createUserWithEmailAndPassword(email, password);
+        return { uid: cred.user.uid, loginEmail: email };
+    } catch (err) {
+        if (!err || err.code !== "auth/email-already-in-use") throw err;
+    }
+    const alt = taggedEmail(email, tag);
+    const cred2 = await authInstance.createUserWithEmailAndPassword(alt, password);
+    return { uid: cred2.user.uid, loginEmail: alt };
+}
+
+
+/* =========================================================
+   TEACHERS: LOGIN (ID + password typed in by the school)
+========================================================= */
+ 
+let currentTeacher = null;
+let teacherRoster = [];
+let teacherMarks = {};
+let teacherToday = null;
+let termDates = { name: "", start: "", end: "" };
+ 
+function teacherLookupKey(id) {
+    return "teacher~" + lookupKey(id);
+}
+ 
+function classKeyOf(name) {
+    return encodeURIComponent(String(name || ""));
+}
+ 
+function localDateStr(d) {
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return d.getFullYear() + "-" + m + "-" + day;
+}
+ 
+function fmtTime(ms) {
+    return new Date(ms).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+ 
+function fmtDateLabel(str) {
+    return new Date(str + "T00:00:00").toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+}
+ 
+ 
+/* ---------- Admin: create the teacher's login ---------- */
+ 
+async function createTeacherAccount(t, password) {
+    if (cloudRole !== "admin") throw { message: "Please log in as the administrator first." };
+    let second = null;
+    let uid = null;
+    let loginEmail = t.email;
+    try {
+        // A second Firebase connection, so the admin stays logged in.
+        second = firebase.initializeApp(firebaseConfig, "teacher-" + Date.now());
+        const secondAuth = second.auth();
+        const made = await createAuthAccount(secondAuth, t.email, password, t.teacherId);
+        uid = made.uid;
+        loginEmail = made.loginEmail;
+        await secondAuth.signOut();
+    } finally {
+        if (second) { try { await second.delete(); } catch (e) {} }
+    }
+    const batch = firebaseDb.batch();
+    batch.set(firebaseDb.collection("teacherAccounts").doc(uid), {
+        teacherId: t.teacherId,
+        name: t.name,
+        className: t.className,
+        classKey: classKeyOf(t.className),
+        email: t.email,
+        loginEmail: loginEmail,
+        phone: t.phone || "",
+        subject: t.subject || ""
+    });
+    batch.set(firebaseDb.collection("loginLookup").doc(teacherLookupKey(t.teacherId)), { email: loginEmail });
+    await batch.commit();
+    return { uid: uid, loginEmail: loginEmail };
+}
+ 
+ 
+/* ---------- Admin: Teachers page ---------- */
+ 
+function renderTeachers() {
+    document.getElementById("adminMain").innerHTML = `
+        <h1 style="color:#211d59;margin-bottom:25px;">Teachers</h1>
+        <button class="success-btn" onclick="showAddTeacher()">+ Add Teacher</button>
+        <div class="admin-card" style="margin-top:20px;">
+            ${teachers.length ? teachers.map(function (t) {
+                return `<div class="admin-student">
+                    <div class="admin-student-info">
+                        <h3>${escapeHTML(t.name || "")}</h3>
+                        <p>${t.uid ? "Teacher ID: <strong>" + escapeHTML(t.teacherId || "") + "</strong>" : "<span style='color:#d32f2f'>No login yet</span>"}</p>
+                        <p>Class: ${escapeHTML(classLabel(t.className || ""))}${classes.indexOf(t.className) === -1 ? " <span style='color:#d32f2f'>⚠️ old class, press Change Class</span>" : ""}${t.subject ? " · " + escapeHTML(t.subject) : ""}</p>
+                        <p>${escapeHTML(t.phone || "")}</p>
+                        <p>${escapeHTML(t.email || "")}</p>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        ${t.uid
+                            ? `<button class="secondary-btn" onclick="changeTeacherClass('${t.id}')">Change Class</button>
+                               <button class="secondary-btn" onclick="sendTeacherReset('${t.id}')">Reset Password</button>`
+                            : `<button class="success-btn" onclick="showCreateTeacherLogin('${t.id}')">Create Login</button>`}
+                        <button class="danger-btn" onclick="removeTeacher('${t.id}')">Remove</button>
+                    </div>
+                </div>`;
+            }).join("") : '<div class="empty">No teachers yet.</div>'}
+        </div>`;
+}
+ 
+function showAddTeacher() {
+    openModal(`
+        <button class="close-modal" onclick="closeModal()">×</button>
+        <h2>Add Teacher</h2>
+        <div class="form-grid">
+            ${editField("Name", "teacherName", "")}
+            ${editField("Teacher ID (you choose, e.g. TCH001)", "teacherIdField", "")}
+            ${editField("Password (at least 6 characters)", "teacherPassword", "")}
+            ${editField("Phone", "teacherPhone", "")}
+            ${editField("Email (used for password reset)", "teacherEmail", "", "email")}
+            <div class="form-field">
+                <label>Class (the only class this teacher can see)</label>
+                <select id="teacherClass">${classes.map(function (c) { return classOptionHTML(c); }).join("")}</select>
+            </div>
+            ${editField("Subject", "teacherSubject", "")}
+        </div>
+        <div class="form-buttons">
+            <button class="success-btn" id="addTeacherBtn" onclick="addTeacher()">Add Teacher</button>
+        </div>`);
+}
+ 
+function readTeacherId(raw) {
+    return String(raw || "").trim();
+}
+ 
+async function teacherIdProblem(teacherId, ignoreUid) {
+    if (!teacherId || /[\s@\/]/.test(teacherId)) return "Enter a Teacher ID with no spaces (for example TCH001).";
+    if (teachers.some(function (x) { return x.uid !== ignoreUid && String(x.teacherId || "").toLowerCase() === teacherId.toLowerCase(); })) {
+        return "That Teacher ID is already used by another teacher.";
+    }
+    const snap = await firebaseDb.collection("loginLookup").doc(teacherLookupKey(teacherId)).get();
+    if (snap.exists) return "That Teacher ID is already in use.";
+    return "";
+}
+ 
+async function addTeacher() {
+    const val = function (id) { return document.getElementById(id).value.trim(); };
+    const t = {
+        id: "T" + Date.now(),
+        name: val("teacherName"),
+        teacherId: readTeacherId(val("teacherIdField")),
+        phone: val("teacherPhone"),
+        email: val("teacherEmail").toLowerCase(),
+        className: val("teacherClass"),
+        subject: val("teacherSubject")
+    };
+    const password = document.getElementById("teacherPassword").value;
+ 
+    if (!t.name) { appAlert("Enter the teacher's name."); return; }
+    if (!isValidEmail(t.email)) { appAlert("Enter the teacher's email address."); return; }
+    if (password.length < 6) { appAlert("The password must be at least 6 characters."); return; }
+ 
+    const btn = document.getElementById("addTeacherBtn");
+    if (btn) btn.disabled = true;
+    try {
+        const problem = await teacherIdProblem(t.teacherId, null);
+        if (problem) { appAlert(problem); return; }
+        const made = await createTeacherAccount(t, password);
+        t.uid = made.uid;
+        t.loginEmail = made.loginEmail;
+        teachers.push(t);
+        saveData();
+        closeModal();
+        renderTeachers();
+        appAlert("Teacher added.\n\nTeacher ID: " + t.teacherId + "\nPassword: the one you typed\n\nThe teacher logs in from the \"Teacher Login\" link on the login page.");
+    } catch (err) {
+        console.error("Add teacher failed:", err);
+        appAlert(cloudErrorText(err));
+    } finally {
+        if (btn) btn.disabled = false;
+    }
+}
+ 
+// For teachers added before this update: give them a login.
+function showCreateTeacherLogin(id) {
+    const t = teachers.find(function (x) { return x.id === id; });
+    if (!t) return;
+    openModal(`
+        <button class="close-modal" onclick="closeModal()">×</button>
+        <h2>Create Login for ${escapeHTML(t.name || "")}</h2>
+        <div class="form-grid">
+            ${editField("Teacher ID (you choose, e.g. TCH001)", "teacherIdField", "")}
+            ${editField("Password (at least 6 characters)", "teacherPassword", "")}
+            ${editField("Email (used for password reset)", "teacherEmail", t.email || "", "email")}
+        </div>
+        <div class="form-buttons">
+            <button class="success-btn" id="addTeacherBtn" onclick="createLoginForExisting('${t.id}')">Create Login</button>
+        </div>`);
+}
+ 
+async function createLoginForExisting(id) {
+    const t = teachers.find(function (x) { return x.id === id; });
+    if (!t) return;
+    const teacherId = readTeacherId(document.getElementById("teacherIdField").value);
+    const password = document.getElementById("teacherPassword").value;
+    const email = document.getElementById("teacherEmail").value.trim().toLowerCase();
+    if (!isValidEmail(email)) { appAlert("Enter the teacher's email address."); return; }
+    if (password.length < 6) { appAlert("The password must be at least 6 characters."); return; }
+    const btn = document.getElementById("addTeacherBtn");
+    if (btn) btn.disabled = true;
+    try {
+        const problem = await teacherIdProblem(teacherId, null);
+        if (problem) { appAlert(problem); return; }
+        const copy = Object.assign({}, t, { teacherId: teacherId, email: email });
+        const made = await createTeacherAccount(copy, password);
+        t.uid = made.uid;
+        t.loginEmail = made.loginEmail;
+        t.teacherId = teacherId;
+        t.email = email;
+        saveData();
+        closeModal();
+        renderTeachers();
+        appAlert("Login created.\n\nTeacher ID: " + teacherId);
+    } catch (err) {
+        console.error("Create teacher login failed:", err);
+        appAlert(cloudErrorText(err));
+    } finally {
+        if (btn) btn.disabled = false;
+    }
+}
+ 
+function changeTeacherClass(id) {
+    const t = teachers.find(function (x) { return x.id === id; });
+    if (!t) return;
+    openModal(`
+        <button class="close-modal" onclick="closeModal()">×</button>
+        <h2>Assign Class: ${escapeHTML(t.name || "")}</h2>
+        <div class="form-field">
+            <label>Class</label>
+            <select id="teacherNewClass">${classes.map(function (c) { return classOptionHTML(c, c === t.className); }).join("")}</select>
+        </div>
+        <div class="form-buttons">
+            <button class="success-btn" onclick="saveTeacherClass('${t.id}')">Save</button>
+        </div>`);
+}
+ 
+async function saveTeacherClass(id) {
+    const t = teachers.find(function (x) { return x.id === id; });
+    if (!t) return;
+    const cls = document.getElementById("teacherNewClass").value;
+    try {
+        await firebaseDb.collection("teacherAccounts").doc(t.uid).update({ className: cls, classKey: classKeyOf(cls) });
+        t.className = cls;
+        saveData();
+        closeModal();
+        renderTeachers();
+    } catch (err) {
+        appAlert("Could not change the class: " + cloudErrorText(err));
+    }
+}
+ 
+async function sendTeacherReset(id) {
+    const t = teachers.find(function (x) { return x.id === id; });
+    if (!t || !t.email) return;
+    const to = t.loginEmail || t.email;
+    if (!await appConfirm("Send a password reset email to " + t.email + "?")) return;
+    try {
+        await firebaseAuth.sendPasswordResetEmail(to);
+        appAlert("A password reset link was sent to " + t.email + ".");
+    } catch (err) {
+        appAlert("Could not send the email: " + cloudErrorText(err));
+    }
+}
+ 
+async function removeTeacher(id) {
+    const t = teachers.find(function (x) { return x.id === id; });
+    if (!t) return;
+    if (!await appConfirm("Remove " + (t.name || "this teacher") + "? Their login will stop working.")) return;
+    try {
+        if (t.uid) {
+            const b = firebaseDb.batch();
+            b.delete(firebaseDb.collection("teacherAccounts").doc(t.uid));
+            if (t.teacherId) b.delete(firebaseDb.collection("loginLookup").doc(teacherLookupKey(t.teacherId)));
+            await b.commit();
+        }
+    } catch (err) {
+        appAlert("Could not remove the teacher's login: " + cloudErrorText(err));
+        return;
+    }
+    teachers = teachers.filter(function (x) { return x.id !== id; });
+    saveData();
+    renderTeachers();
+}
+ 
+ 
+/* ---------- Teacher: login page ---------- */
+ 
+function showTeacherLogin() {
+    clearInline("studentLoginMsg");
+    document.getElementById("loginPage").classList.add("hidden");
+    document.getElementById("hostLoginPage").classList.add("hidden");
+    document.getElementById("teacherLoginPage").classList.remove("hidden");
+}
+ 
+function hideTeacherLogin() {
+    clearInline("teacherLoginMsg");
+    document.getElementById("teacherLoginPage").classList.add("hidden");
+    document.getElementById("loginPage").classList.remove("hidden");
+}
+ 
+async function teacherEmailFor(loginValue) {
+    if (loginValue.indexOf("@") !== -1) return loginValue;
+    const lookup = await firebaseDb.collection("loginLookup").doc(teacherLookupKey(loginValue)).get();
+    if (!lookup.exists) throw { code: "auth/user-not-found" };
+    return lookup.data().email;
+}
+ 
+let teacherLoginBusy = false;
+ 
+async function teacherLogin() {
+    if (teacherLoginBusy) return;
+    const loginValue = document.getElementById("teacherLoginId").value.trim();
+    const password = document.getElementById("teacherLoginPassword").value;
+    if (!loginValue || !password) { showInline("teacherLoginMsg", "Please enter your Teacher ID and password.", "error"); return; }
+    if (!firebaseAuth || !firebaseDb) { showInline("teacherLoginMsg", "Firebase is not ready. Check your internet connection and reload the page.", "error"); return; }
+ 
+    teacherLoginBusy = true;
+    const btn = document.querySelector('button[onclick="teacherLogin()"]');
+    if (btn) btn.disabled = true;
+    try {
+        const email = await teacherEmailFor(loginValue);
+        const cred = await firebaseAuth.signInWithEmailAndPassword(email, password);
+        const doc = await firebaseDb.collection("teacherAccounts").doc(cred.user.uid).get();
+        if (!doc.exists) {
+            await firebaseAuth.signOut();
+            showInline("teacherLoginMsg", "This account is not set up as a teacher. Contact the administrator.", "error");
+            return;
+        }
+        currentTeacher = Object.assign({ uid: cred.user.uid }, doc.data());
+        cloudRole = "teacher";
+ 
+        // Only this teacher's own class list is loaded.
+        teacherRoster = [];
+        try {
+            const r = await firebaseDb.collection("rosters").doc(currentTeacher.classKey).get();
+            if (r.exists) teacherRoster = (r.data().students || []).slice().sort(function (a, b) { return String(a.name).localeCompare(String(b.name)); });
+        } catch (e) { console.warn("Could not load the class list:", e); }
+ 
+        teacherMarks = {};
+        teacherToday = null;
+        const today = localDateStr(new Date());
+        const att = await firebaseDb.collection("attendance").doc(currentTeacher.classKey + "__" + today).get();
+        if (att.exists) {
+            teacherToday = att.data();
+            teacherRoster.forEach(function (s) {
+                const rec = (teacherToday.records || {})[s.uid];
+                if (rec) teacherMarks[s.uid] = rec.s;
+            });
+        }
+ 
+        clearInline("teacherLoginMsg");
+        document.getElementById("teacherLoginPassword").value = "";
+        document.getElementById("teacherLoginPage").classList.add("hidden");
+        document.getElementById("teacherDashboard").classList.remove("hidden");
+        renderTeacherPortal();
+        markActivity();
+    } catch (err) {
+        console.error("Teacher login error:", err);
+        const code = err && err.code ? err.code : "";
+        const bad = code === "auth/invalid-credential" || code === "auth/wrong-password" || code === "auth/user-not-found" || code === "auth/invalid-email";
+        showInline("teacherLoginMsg", bad ? "Incorrect Teacher ID or password." : cloudErrorText(err), "error");
+    } finally {
+        teacherLoginBusy = false;
+        if (btn) btn.disabled = false;
+    }
+}
+ 
+async function teacherForgotPassword() {
+    const loginValue = document.getElementById("teacherLoginId").value.trim();
+    if (!loginValue) { showInline("teacherLoginMsg", "Type your Teacher ID above first, then click this again.", "error"); return; }
+    try {
+        const email = await teacherEmailFor(loginValue);
+        await firebaseAuth.sendPasswordResetEmail(email);
+    } catch (err) {
+        console.warn("Teacher reset:", err);
+    }
+    showInline("teacherLoginMsg", "If that Teacher ID exists, a password reset link was sent to the email registered for it.", "success");
+}
+ 
+ 
+/* ---------- Teacher: take attendance ---------- */
+ 
+function renderTeacherPortal() {
+    const t = currentTeacher;
+    const d = teacherToday;
+    const taken = d
+        ? "✅ Attendance for today was taken at " + fmtTime(d.takenAt) + (d.updatedAt && d.updatedAt !== d.takenAt ? " (last updated " + fmtTime(d.updatedAt) + ")" : "") + ". You can still change it today."
+        : "Attendance for today has not been taken yet.";
+    document.getElementById("teacherMain").innerHTML = `
+        <div class="admin-card">
+            <h2 style="color:#000078;">Welcome, ${escapeHTML(t.name || "")}</h2>
+            <p><strong>Class:</strong> ${escapeHTML(classLabel(t.className || ""))}${t.subject ? " · " + escapeHTML(t.subject) : ""}</p>
+            <p><strong>Today:</strong> ${escapeHTML(fmtDateLabel(localDateStr(new Date())))}</p>
+            <p style="margin-top:8px;color:#555;">${taken}</p>
+        </div>
+        <div class="admin-card">
+            <h2>Mark Attendance</h2>
+            <div id="teacherCounts" style="margin:10px 0;font-weight:bold;"></div>
+            <button class="secondary-btn" onclick="markAllPresent()">Mark all present</button>
+            <div id="teacherRows" style="margin-top:10px;"></div>
+            <button class="success-btn" style="margin-top:20px;" onclick="saveTeacherAttendance()">Save Attendance</button>
+        </div>`;
+    renderTeacherRows();
+}
+ 
+function renderTeacherRows() {
+    const rows = document.getElementById("teacherRows");
+    if (!rows) return;
+    let p = 0, a = 0;
+    teacherRoster.forEach(function (s) {
+        if (teacherMarks[s.uid] === "P") p++;
+        else if (teacherMarks[s.uid] === "A") a++;
+    });
+    const left = teacherRoster.length - p - a;
+    document.getElementById("teacherCounts").innerHTML =
+        "✅ Present: " + p + " &nbsp; ❌ Absent: " + a + " &nbsp; ⏳ Not marked: " + left;
+    if (!teacherRoster.length) {
+        rows.innerHTML = '<div class="empty">There are no students in your class yet. Ask the administrator.</div>';
+        return;
+    }
+    rows.innerHTML = teacherRoster.map(function (s, i) {
+        const m = teacherMarks[s.uid];
+        return `<div class="att-row">
+            <div class="att-name"><strong>${i + 1}. ${escapeHTML(s.name || "")}</strong><small>${escapeHTML(s.id || "")}</small></div>
+            <div class="att-btns">
+                <button class="att-btn ${m === "P" ? "on-present" : ""}" onclick="setAttendanceMark('${s.uid}','P')">Present</button>
+                <button class="att-btn ${m === "A" ? "on-absent" : ""}" onclick="setAttendanceMark('${s.uid}','A')">Absent</button>
+            </div>
+        </div>`;
+    }).join("");
+}
+ 
+function setAttendanceMark(uid, value) {
+    teacherMarks[uid] = value;
+    renderTeacherRows();
+}
+ 
+function markAllPresent() {
+    teacherRoster.forEach(function (s) { teacherMarks[s.uid] = "P"; });
+    renderTeacherRows();
+}
+ 
+async function saveTeacherAttendance() {
+    const t = currentTeacher;
+    if (!teacherRoster.length) { appAlert("There are no students in your class yet."); return; }
+    const left = teacherRoster.filter(function (s) { return !teacherMarks[s.uid]; }).length;
+    if (left) { appAlert("Please mark every student first. " + left + " not marked yet."); return; }
+ 
+    const now = Date.now();
+    const date = localDateStr(new Date(now));
+    if (teacherToday && teacherToday.date !== date) teacherToday = null;   // the page was left open past midnight
+ 
+    const records = {};
+    let p = 0, a = 0;
+    teacherRoster.forEach(function (s) {
+        const st = teacherMarks[s.uid];
+        records[s.uid] = { n: s.name || "", i: s.id || "", s: st };
+        if (st === "P") p++; else a++;
+    });
+    const data = {
+        className: t.className,
+        classKey: t.classKey,
+        date: date,
+        takenAt: teacherToday && teacherToday.takenAt ? teacherToday.takenAt : now,
+        updatedAt: now,
+        teacherUid: t.uid,
+        teacherId: t.teacherId || "",
+        teacherName: t.name || "",
+        present: p,
+        absent: a,
+        total: p + a,
+        records: records
+    };
+    try {
+        await firebaseDb.collection("attendance").doc(t.classKey + "__" + date).set(data);
+        teacherToday = data;
+        renderTeacherPortal();
+        appAlert("Attendance saved at " + fmtTime(now) + ".\nPresent: " + p + "   Absent: " + a);
+    } catch (err) {
+        console.error("Attendance save failed:", err);
+        appAlert("Could not save attendance: " + cloudErrorText(err));
+    }
+}
+ 
+function changeTeacherPassword() {
+    openModal(`
+        <button class="close-modal" onclick="closeModal()">×</button>
+        <h2>Change Password</h2>
+        <div class="form-field"><label>Current Password</label><input type="password" id="tpOld"></div>
+        <div class="form-field"><label>New Password (at least 6 characters)</label><input type="password" id="tpNew"></div>
+        <div class="form-field"><label>Confirm New Password</label><input type="password" id="tpNew2"></div>
+        <div class="form-buttons"><button class="success-btn" onclick="saveTeacherPassword()">Save Password</button></div>`);
+}
+ 
+async function saveTeacherPassword() {
+    const oldPw = document.getElementById("tpOld").value;
+    const newPw = document.getElementById("tpNew").value;
+    const newPw2 = document.getElementById("tpNew2").value;
+    const user = firebaseAuth && firebaseAuth.currentUser;
+    if (!user) { appAlert("Please log out and log in again."); return; }
+    if (!oldPw) { appAlert("Enter your current password."); return; }
+    if (newPw.length < 6) { appAlert("The new password must be at least 6 characters."); return; }
+    if (newPw !== newPw2) { appAlert("The new passwords do not match."); return; }
+    try {
+        await reauthenticateWith(user, oldPw);
+        await user.updatePassword(newPw);
+        closeModal();
+        appAlert("Your password was changed.");
+    } catch (err) {
+        appAlert(authErrorText(err));
+    }
+}
+ 
+ 
+/* =========================================================
+   ADMIN: ATTENDANCE RECORDS
+========================================================= */
+ 
+let attRecords = [];
+let attView = "daily";
+let attEdit = null;
+const attFilter = { cls: "All", from: "", to: "" };
+ 
+function renderAdminAttendance() {
+    if (!attFilter.from) attFilter.from = attFilter.to = localDateStr(new Date());
+    document.getElementById("adminMain").innerHTML = `
+        <h1 style="color:#000078;margin-bottom:25px;">Attendance</h1>
+        <div class="admin-card">
+            <div class="form-grid">
+                <div class="form-field">
+                    <label>Class</label>
+                    <select id="attClass">
+                        <option value="All">All classes</option>
+                        ${classes.map(function (c) { return classOptionHTML(c, c === attFilter.cls); }).join("")}
+                    </select>
+                </div>
+                <div class="form-field"><label>From</label><input type="date" id="attFrom" value="${attFilter.from}"></div>
+                <div class="form-field"><label>To</label><input type="date" id="attTo" value="${attFilter.to}"></div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;">
+                <button class="secondary-btn" onclick="setAttRange('today')">Today</button>
+                <button class="secondary-btn" onclick="setAttRange('yesterday')">Yesterday</button>
+                <button class="secondary-btn" onclick="setAttRange('week')">Last 7 days</button>
+                <button class="secondary-btn" onclick="setAttRange('term')">This term</button>
+            </div>
+            <button class="success-btn" onclick="loadAttendance()">Show Attendance</button>
+        </div>
+        <div id="attResults"></div>
+        <div class="admin-card">
+            <h2>Term Dates</h2>
+            <p style="color:#777;margin-bottom:10px;">Set these once per term so "This term" shows the whole term.</p>
+            <div class="form-grid">
+                <div class="form-field"><label>Term name</label><input type="text" id="termName" value="${escapeHTML(termDates.name || "")}" placeholder="e.g. First Term"></div>
+                <div class="form-field"><label>Starts</label><input type="date" id="termStart" value="${termDates.start || ""}"></div>
+                <div class="form-field"><label>Ends</label><input type="date" id="termEnd" value="${termDates.end || ""}"></div>
+            </div>
+            <button class="success-btn" style="margin-top:12px;" onclick="saveTermDates()">Save Term Dates</button>
+        </div>`;
+    loadAttendance();
+}
+ 
+function saveTermDates() {
+    termDates = {
+        name: document.getElementById("termName").value.trim(),
+        start: document.getElementById("termStart").value,
+        end: document.getElementById("termEnd").value
+    };
+    cloudAfterSave();
+    appAlert("Term dates saved.");
+}
+ 
+function setAttRange(kind) {
+    const today = new Date();
+    let from = localDateStr(today), to = from;
+    if (kind === "yesterday") {
+        const y = new Date(today); y.setDate(y.getDate() - 1);
+        from = to = localDateStr(y);
+    } else if (kind === "week") {
+        const w = new Date(today); w.setDate(w.getDate() - 6);
+        from = localDateStr(w);
+    } else if (kind === "term") {
+        if (!termDates.start || !termDates.end) { appAlert("Set the term start and end dates first (the Term Dates box below)."); return; }
+        from = termDates.start; to = termDates.end;
+    }
+    document.getElementById("attFrom").value = from;
+    document.getElementById("attTo").value = to;
+    loadAttendance();
+}
+ 
+async function loadAttendance() {
+    const box = document.getElementById("attResults");
+    if (!box) return;
+    attFilter.cls = document.getElementById("attClass").value;
+    attFilter.from = document.getElementById("attFrom").value;
+    attFilter.to = document.getElementById("attTo").value;
+    if (!attFilter.from || !attFilter.to || attFilter.from > attFilter.to) {
+        box.innerHTML = '<div class="admin-card"><div class="empty">Choose a valid From and To date.</div></div>';
+        return;
+    }
+    box.innerHTML = '<div class="admin-card"><div class="empty">Loading…</div></div>';
+    try {
+        const snap = await firebaseDb.collection("attendance")
+            .where("date", ">=", attFilter.from)
+            .where("date", "<=", attFilter.to)
+            .get();
+        attRecords = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); })
+            .filter(function (r) { return attFilter.cls === "All" || r.className === attFilter.cls; });
+        attRecords.sort(function (x, y) {
+            if (x.date !== y.date) return x.date < y.date ? 1 : -1;
+            return String(x.className).localeCompare(String(y.className));
+        });
+        renderAttendanceResults();
+    } catch (err) {
+        console.error("Could not load attendance:", err);
+        box.innerHTML = '<div class="admin-card"><div class="empty">Could not load attendance: ' + escapeHTML(cloudErrorText(err)) + '</div></div>';
+    }
+}
+ 
+function setAttView(v) {
+    attView = v;
+    renderAttendanceResults();
+}
+ 
+function renderAttendanceResults() {
+    const box = document.getElementById("attResults");
+    if (!box) return;
+    const tabs = `<div style="display:flex;gap:8px;margin-bottom:14px;">
+        <button class="${attView === "daily" ? "success-btn" : "secondary-btn"}" onclick="setAttView('daily')">Daily records</button>
+        <button class="${attView === "summary" ? "success-btn" : "secondary-btn"}" onclick="setAttView('summary')">Summary by student</button>
+    </div>`;
+    box.innerHTML = '<div class="admin-card">' + tabs + (attView === "daily" ? attendanceDailyHTML() : attendanceSummaryHTML()) + "</div>";
+}
+ 
+function attendanceDailyHTML() {
+    if (!attRecords.length) return '<div class="empty">No attendance was recorded for these dates.</div>';
+    return attRecords.map(function (r, i) {
+        const edited = r.adminEditedAt ? " · edited by admin " + fmtTime(r.adminEditedAt) : "";
+        const updated = r.updatedAt && r.updatedAt !== r.takenAt ? " (updated " + fmtTime(r.updatedAt) + ")" : "";
+        return `<div style="border:1px solid #ddd;border-radius:10px;padding:14px;margin-bottom:12px;">
+            <strong>📅 ${escapeHTML(fmtDateLabel(r.date))}</strong> · ${escapeHTML(classLabel(r.className || ""))}
+            <p style="margin:6px 0;">🕒 Taken at ${fmtTime(r.takenAt)}${updated} by ${escapeHTML(r.teacherName || "a teacher")}${edited}</p>
+            <p style="margin:6px 0;">✅ Present: <strong>${r.present}</strong> &nbsp; ❌ Absent: <strong>${r.absent}</strong> &nbsp; Total: ${r.total}</p>
+            <button class="secondary-btn" onclick="openAttendanceDetail(${i})">View / Edit</button>
+        </div>`;
+    }).join("");
+}
+ 
+function attendanceSummaryHTML() {
+    if (attFilter.cls === "All") return '<div class="empty">Choose one class above, then press Show Attendance, to see the summary by student.</div>';
+    if (!attRecords.length) return '<div class="empty">No attendance was recorded for these dates.</div>';
+    const map = {};
+    students.filter(function (s) { return s.className === attFilter.cls && s.uid; }).forEach(function (s) {
+        map[s.uid] = { name: s.name, id: s.id, p: 0, a: 0 };
+    });
+    attRecords.forEach(function (r) {
+        Object.keys(r.records || {}).forEach(function (uid) {
+            const x = r.records[uid];
+            if (!map[uid]) map[uid] = { name: x.n, id: x.i, p: 0, a: 0 };
+            if (x.s === "P") map[uid].p++; else map[uid].a++;
+        });
+    });
+    const list = Object.keys(map).map(function (k) { return map[k]; }).sort(function (x, y) { return String(x.name).localeCompare(String(y.name)); });
+    return `<p style="margin-bottom:10px;color:#555;">${attRecords.length} day(s) of attendance for ${escapeHTML(attFilter.cls)}, ${escapeHTML(attFilter.from)} to ${escapeHTML(attFilter.to)}</p>
+        <div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;">
+        <tr style="text-align:left;border-bottom:2px solid #ddd;"><th style="padding:8px;">Student</th><th>ID</th><th>Present</th><th>Absent</th><th>Days</th><th>%</th></tr>
+        ${list.map(function (x) {
+            const days = x.p + x.a;
+            const pct = days ? Math.round(x.p * 100 / days) : 0;
+            return `<tr style="border-bottom:1px solid #eee;"><td style="padding:8px;">${escapeHTML(x.name || "")}</td><td>${escapeHTML(x.id || "")}</td><td>${x.p}</td><td>${x.a}</td><td>${days}</td><td>${pct}%</td></tr>`;
+        }).join("")}
+        </table></div>`;
+}
+ 
+function openAttendanceDetail(i) {
+    const r = attRecords[i];
+    if (!r) return;
+    attEdit = { index: i, records: JSON.parse(JSON.stringify(r.records || {})) };
+    renderAttendanceDetail();
+}
+ 
+function renderAttendanceDetail() {
+    const r = attRecords[attEdit.index];
+    const uids = Object.keys(attEdit.records).sort(function (x, y) {
+        return String(attEdit.records[x].n).localeCompare(String(attEdit.records[y].n));
+    });
+    openModal(`
+        <button class="close-modal" onclick="closeModal()">×</button>
+        <h2>${escapeHTML(classLabel(r.className || ""))} · ${escapeHTML(fmtDateLabel(r.date))}</h2>
+        <p style="color:#555;margin-bottom:10px;">Taken at ${fmtTime(r.takenAt)} by ${escapeHTML(r.teacherName || "a teacher")}. Tap Present or Absent to correct a record.</p>
+        ${uids.map(function (uid, n) {
+            const x = attEdit.records[uid];
+            return `<div class="att-row">
+                <div class="att-name"><strong>${n + 1}. ${escapeHTML(x.n || "")}</strong><small>${escapeHTML(x.i || "")}</small></div>
+                <div class="att-btns">
+                    <button class="att-btn ${x.s === "P" ? "on-present" : ""}" onclick="adminSetMark('${uid}','P')">Present</button>
+                    <button class="att-btn ${x.s === "A" ? "on-absent" : ""}" onclick="adminSetMark('${uid}','A')">Absent</button>
+                </div>
+            </div>`;
+        }).join("")}
+        <div class="form-buttons"><button class="success-btn" onclick="saveAttendanceEdit()">Save Changes</button></div>`);
+}
+ 
+function adminSetMark(uid, v) {
+    attEdit.records[uid].s = v;
+    renderAttendanceDetail();
+}
+ 
+async function saveAttendanceEdit() {
+    const r = attRecords[attEdit.index];
+    let p = 0, a = 0;
+    Object.keys(attEdit.records).forEach(function (k) { if (attEdit.records[k].s === "P") p++; else a++; });
+    try {
+        const now = Date.now();
+        await firebaseDb.collection("attendance").doc(r.id).update({ records: attEdit.records, present: p, absent: a, total: p + a, adminEditedAt: now });
+        r.records = attEdit.records; r.present = p; r.absent = a; r.total = p + a; r.adminEditedAt = now;
+        closeModal();
+        renderAttendanceResults();
+    } catch (err) {
+        appAlert("Could not save the changes: " + cloudErrorText(err));
+    }
+}
+ 
+ 
+/* =========================================================
    AUTO LOGOUT AFTER 10 MINUTES OF INACTIVITY
 ========================================================= */
  
@@ -8156,7 +8995,7 @@ function markActivity() {
  
 function portalSessionOpen() {
     if (cloudRole) return true;
-    return ["studentDashboard", "studentContent", "adminDashboard"].some(function (id) {
+    return ["studentDashboard", "studentContent", "adminDashboard", "teacherDashboard"].some(function (id) {
         const el = document.getElementById(id);
         return el && !el.classList.contains("hidden");
     });
@@ -8189,7 +9028,7 @@ document.addEventListener("visibilitychange", function () {
 function authErrorText(err) {
     const c = err && err.code ? err.code : "";
     if (c === "auth/wrong-password" || c === "auth/invalid-credential") return "Incorrect current password.";
-    if (c === "auth/email-already-in-use") return "That email is already used by another account.";
+    if (c === "auth/email-already-in-use") return "That email is already used by another login. If it is a family email, ask the school office for help.";
     if (c === "auth/invalid-email") return "That email address is not valid.";
     if (c === "auth/requires-recent-login") return "For security, please log out, log in again, then try once more.";
     if (c === "auth/weak-password") return "The new password must be at least 6 characters.";
@@ -8312,10 +9151,10 @@ async function repairStudentEmailLinks() {
             const b = firebaseDb.batch();
             b.set(firebaseDb.collection("loginLookup").doc(lookupKey(s.id)), { email: a.newEmail });
             if (s.index) b.set(firebaseDb.collection("loginLookup").doc(lookupKey(s.index)), { email: a.newEmail });
-            b.update(firebaseDb.collection("students").doc(s.uid), { email: a.newEmail });
+            b.update(firebaseDb.collection("students").doc(s.uid), { loginEmail: a.newEmail });
             b.update(firebaseDb.collection("adminAlerts").doc(a.id), { lookupSynced: true });
             await b.commit();
-            s.email = a.newEmail;
+            s.loginEmail = a.newEmail;
             cloudCache.st[s.uid] = JSON.stringify(cleanStudent(s, true));
         } catch (err) {
             console.warn("Could not repair the login link for", s.id, err);
@@ -8388,8 +9227,9 @@ async function deleteAlert(id) {
 async function reconcileStudentEmail(user, s) {
     const authEmail = String(user && user.email || "").toLowerCase();
     if (!authEmail || !s || !s.uid) return;
-    if (authEmail === String(s.email || "").toLowerCase()) return;
-    const oldEmail = s.email || "";
+    const current = String(s.loginEmail || s.email || "").toLowerCase();
+    if (authEmail === current) return;
+    const oldEmail = s.loginEmail || s.email || "";
     let lookupSynced = true;
     try {
         await user.getIdToken(true);
@@ -8402,12 +9242,12 @@ async function reconcileStudentEmail(user, s) {
         console.warn("Could not update the Student ID login link:", err);
     }
     try {
-        await firebaseDb.collection("students").doc(s.uid).update({ email: authEmail });
+        await firebaseDb.collection("students").doc(s.uid).update({ loginEmail: authEmail });
     } catch (err) {
         lookupSynced = false;
         console.warn("Could not update the student record email:", err);
     }
-    s.email = authEmail;
+    s.loginEmail = authEmail;
     await notifyAdminOfChange("email", { oldEmail: oldEmail, newEmail: authEmail, lookupSynced: lookupSynced });
 }
  
@@ -8687,7 +9527,7 @@ async function saveResetPassword(id) {
     if (res.ok) {
         await appAlert("Student password reset successfully.");
     } else if (res.emailed) {
-        await appAlert("The student has already changed the original password, so it cannot be reset directly. A password reset link was emailed to " + s.email + ".");
+        await appAlert("The student has already changed the original password, so it cannot be reset directly. A password reset link was emailed to " + (s.loginEmail || s.email) + ".");
     } else {
         await appAlert("Could not reset the password: " + (res.error || "unknown error"));
     }
