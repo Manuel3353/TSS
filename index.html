@@ -33,12 +33,6 @@ body {
         linear-gradient(rgba(0, 0, 70, 0.22), rgba(0, 0, 70, 0.22)),
         url('school-background.jpg') center / cover no-repeat fixed !important;
 }
-/* Keep the school name readable on the photo without a box behind it */
-#loginPage .school-name {
-    text-shadow:
-        0 0 4px #fff,
-        0 0 8px #fff,
-        0 0 14px #fff;
 }
 
  
@@ -148,7 +142,7 @@ button {
     font-size: 22px;
     font-weight: 800;
     letter-spacing: 1px;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.35);
+
 }
 /* Logo colours, brightened so they show on the blue header (the navy parts become white) */
 .tss-brand .tss-c1 { color: #35B8FF; }
@@ -1235,12 +1229,29 @@ th {
     font-size: 15px;
 }
  
+/* LOGIN LOADING OVERLAY: prevents repeated login taps while authentication is running */
+#loginLoadingOverlay { display:none; position:fixed; inset:0; z-index:999999; background:rgba(245,247,251,.94);
+    align-items:center; justify-content:center; flex-direction:column; gap:18px; padding:24px; text-align:center; }
+#loginLoadingOverlay.active { display:flex; }
+.loading-rings { position:relative; width:120px; height:120px; display:grid; place-items:center; }
+.loading-rings span { position:absolute; border:7px solid #302b63; border-radius:50%; animation:ringPulse 1.35s ease-out infinite; }
+.loading-rings span:nth-child(1) { width:38px; height:38px; animation-delay:0s; }
+.loading-rings span:nth-child(2) { width:70px; height:70px; animation-delay:.25s; }
+.loading-rings span:nth-child(3) { width:104px; height:104px; animation-delay:.5s; }
+#loginLoadingText { color:#302b63; font-weight:700; font-size:17px; }
+@keyframes ringPulse { 0% { transform:scale(.72); opacity:.95; } 100% { transform:scale(1.08); opacity:0; } }
+@media (prefers-reduced-motion: reduce) { .loading-rings span { animation-duration:2.5s; } }
 </style>
  
 </head>
  
  
 <body>
+<!-- Shared loading screen shown while a student, teacher, or host login is being checked -->
+<div id="loginLoadingOverlay" role="status" aria-live="polite" aria-hidden="true">
+    <div class="loading-rings" aria-hidden="true"><span></span><span></span><span></span></div>
+    <div id="loginLoadingText">Signing you in… please wait.</div>
+</div>
  
  
 <!-- =========================================================
@@ -2800,6 +2811,20 @@ function toggleNone(inputId, checkbox) {
    LOGIN
 ========================================================= */
  
+function showLoginLoading(message) {
+    const overlay = document.getElementById("loginLoadingOverlay");
+    const text = document.getElementById("loginLoadingText");
+    if (text) text.textContent = message || "Signing you in… please wait.";
+    if (overlay) { overlay.classList.add("active"); overlay.setAttribute("aria-hidden", "false"); }
+    document.body.style.overflow = "hidden";
+}
+
+function hideLoginLoading() {
+    const overlay = document.getElementById("loginLoadingOverlay");
+    if (overlay) { overlay.classList.remove("active"); overlay.setAttribute("aria-hidden", "true"); }
+    document.body.style.overflow = "";
+}
+
 let studentLoginBusy = false;
 
 async function studentLogin() {
@@ -2827,6 +2852,7 @@ async function studentLogin() {
     }
 
     studentLoginBusy = true;
+    showLoginLoading("Signing in student… please wait.");
     const btn = document.querySelector('button[onclick="studentLogin()"]');
     if (btn) btn.disabled = true;
 
@@ -2892,6 +2918,7 @@ async function studentLogin() {
     } finally {
 
         studentLoginBusy = false;
+        hideLoginLoading();
         if (btn) btn.disabled = false;
 
     }
@@ -3032,12 +3059,14 @@ let hostLoginBusy = false;
 async function hostLogin() {
     if (hostLoginBusy) return;
     hostLoginBusy = true;
+    showLoginLoading("Signing in administrator… please wait.");
     const btn = document.querySelector('#hostLoginPage button[onclick="hostLogin()"]');
     if (btn) btn.disabled = true;
     try {
         await hostLoginInner();
     } finally {
         hostLoginBusy = false;
+        hideLoginLoading();
         if (btn) btn.disabled = false;
     }
 }
@@ -8576,6 +8605,7 @@ async function teacherLogin() {
     if (!firebaseAuth || !firebaseDb) { showInline("teacherLoginMsg", "Firebase is not ready. Check your internet connection and reload the page.", "error"); return; }
  
     teacherLoginBusy = true;
+    showLoginLoading("Signing in teacher… please wait.");
     const btn = document.querySelector('button[onclick="teacherLogin()"]');
     if (btn) btn.disabled = true;
     try {
@@ -8622,6 +8652,7 @@ async function teacherLogin() {
         showInline("teacherLoginMsg", bad ? "Incorrect Teacher ID or password." : cloudErrorText(err), "error");
     } finally {
         teacherLoginBusy = false;
+        hideLoginLoading();
         if (btn) btn.disabled = false;
     }
 }
