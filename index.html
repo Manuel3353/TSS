@@ -57,7 +57,7 @@ button {
 ========================================================= */
  
 :root {
-   --blue: #172554;
+    --blue: #172554;
     --dark-blue: #172554;
     --light-blue: #505698;
     --purple-light: #dbeafe;
@@ -2373,7 +2373,9 @@ async function adminCloudLoad() {
         Object.keys(clubMemberships).forEach(function (k) { if (TSS_CLUBS.indexOf(k) === -1) delete clubMemberships[k]; });
         teachers = d.teachers || [];
         termDates = d.termDates || { name: "", start: "", end: "" };
-        cloudCache.shared = JSON.stringify({ announcements: announcements, teachers: teachers });
+        if (d.academicYear) localStorage.setItem("TSS_academicYear", d.academicYear);
+        if (d.currentTerm) localStorage.setItem("TSS_term", d.currentTerm);
+        cloudCache.shared = JSON.stringify({ announcements: announcements, teachers: teachers, clubMemberships: clubMemberships, termDates: termDates, academicYear: getAcademicYear(), currentTerm: getTerm() });
     } else {
         cloudCache.shared = null;
     }
@@ -2449,7 +2451,7 @@ async function syncAdmin() {
     const db = firebaseDb;
 
     // Announcements + teachers
-    const sharedJson = JSON.stringify({ announcements: announcements, teachers: teachers, clubMemberships: clubMemberships, termDates: termDates });
+    const sharedJson = JSON.stringify({ announcements: announcements, teachers: teachers, clubMemberships: clubMemberships, termDates: termDates, academicYear: getAcademicYear(), currentTerm: getTerm() });
     if (sharedJson !== cloudCache.shared) {
         await db.collection("portal").doc("shared").set(JSON.parse(sharedJson));
         cloudCache.shared = sharedJson;
@@ -2563,7 +2565,9 @@ async function studentCloudLoad(uid) {
     const sh = await db.collection("portal").doc("shared").get();
     announcements = sh.exists ? (sh.data().announcements || []) : [];
     teachers = sh.exists ? (sh.data().teachers || []) : [];
-    clubMemberships = sh.exists ? (sh.data().clubMemberships || {}) : {};
+clubMemberships = sh.exists ? (sh.data().clubMemberships || {}) : {};
+    if (sh.exists && sh.data().academicYear) localStorage.setItem("TSS_academicYear", sh.data().academicYear);
+    if (sh.exists && sh.data().currentTerm) localStorage.setItem("TSS_term", sh.data().currentTerm);
 
     timetables = { lecture: {}, exam: {} };
     for (const type of ["lecture", "exam"]) {
@@ -5114,7 +5118,7 @@ function showAddStudentForm(className) {
  
  
                 <div class="form-field">
-                    <label>Email (can be the same as a brother's, sister's or parent's)</label>
+                    <label>Email</label>
                     <input
                         type="email"
                         id="newEmail"
@@ -6420,6 +6424,8 @@ function adminResultsHTML(list) {
                     ${
                         (s.resultFiles || []).length
                     }
+
+                    ${(s.resultFiles || []).some(f => f.uploadedByRole === "teacher") ? "✅ Class teacher has uploaded results" : "⏳ No class-teacher upload recorded"}
                     PDF Result(s)
                 </p>
  
@@ -8235,35 +8241,35 @@ function renderSettings() {
 }
  
  
-function saveSettings() {
- 
-    localStorage.setItem(
-        "TSS_schoolName",
-        document
-        .getElementById("schoolNameSetting")
-        .value
-    );
- 
- 
-    localStorage.setItem(
-        "TSS_academicYear",
-        document
-        .getElementById("academicYearSetting")
-        .value
-    );
- 
- 
-    localStorage.setItem(
-        "TSS_term",
-        document
-        .getElementById("termSetting")
-        .value
-    );
- 
- 
-    appAlert("Settings saved.");
- 
+async function saveSettings() {
+    const schoolName = document.getElementById("schoolNameSetting").value.trim();
+    const academicYear = document.getElementById("academicYearSetting").value.trim();
+    const currentTerm = document.getElementById("termSetting").value;
+    if (!academicYear) { appAlert("Please enter an academic year, for example 2026/2027."); return; }
+    localStorage.setItem("TSS_schoolName", schoolName);
+    localStorage.setItem("TSS_academicYear", academicYear);
+    localStorage.setItem("TSS_term", currentTerm);
+    if (cloudRole === "admin" && firebaseDb) {
+        try {
+            await firebaseDb.collection("portal").doc("shared").set({ schoolName: schoolName, academicYear: academicYear, currentTerm: currentTerm }, { merge: true });
+            cloudCache.shared = null; // Force the next normal sync to include all shared settings.
+            cloudAfterSave();
+            appAlert("Settings saved to the cloud. Student portals will load the selected academic year and term when they sign in.");
+        } catch (err) {
+            console.error("Could not save academic settings:", err);
+            appAlert("Settings were saved on this device, but could not be saved to the cloud. Check your internet connection and Firestore rules, then try again.");
+        }
+    } else {
+        appAlert("Settings saved on this device. Sign in as host/admin while online to share them with student portals.");
+    }
 }
+
+
+
+
+
+
+
  
  
 /* =========================================================
@@ -8686,6 +8692,13 @@ function renderTeacherPortal() {
             <p style="margin-top:8px;color:#555;">${taken}</p>
         </div>
         <div class="admin-card">
+            <h2>📄 Manage Class Results</h2>
+            <p>Upload PDF results for students in your assigned class. Uploads appear in the student's My Results page and show in Admin > Results.</p>
+            <div id="teacherResultsStatus" style="margin:10px 0;color:#555;"></div>
+            <button class="success-btn" onclick="renderTeacherResults()">Upload / Manage Class Results</button>
+            <div id="teacherResultsArea" style="margin-top:15px;"></div>
+        </div>
+        <div class="admin-card">
             <h2>Mark Attendance</h2>
             <div id="teacherCounts" style="margin:10px 0;font-weight:bold;"></div>
             <button class="secondary-btn" onclick="markAllPresent()">Mark all present</button>
@@ -8695,6 +8708,80 @@ function renderTeacherPortal() {
     renderTeacherRows();
 }
  
+/* ---------- Teacher: manage results for assigned class only ---------- */
+async function renderTeacherResults() {
+    const area = document.getElementById("teacherResultsArea");
+    const status = document.getElementById("teacherResultsStatus");
+    if (!area || !currentTeacher) return;
+    const valid = teacherRoster || [];
+    if (!valid.length) { area.innerHTML = '<div class="empty">No students are assigned to your class yet.</div>'; return; }
+    status.textContent = "Class: " + (currentTeacher.className || "Assigned class") + " · " + valid.length + " student(s)";
+    area.innerHTML = `
+      <div class="form-field"><label>Student</label>
+        <select id="teacherResultStudent" onchange="refreshTeacherResultList()">${valid.map(s => `<option value="${escapeHTML(s.uid)}">${escapeHTML(s.name || s.id)} (${escapeHTML(s.id || "")})</option>`).join("")}</select>
+      </div>
+      <div class="form-grid">
+        <div class="form-field"><label>Academic Year</label><select id="teacherResultYear"><option>2026/2027</option><option>2027/2028</option><option>2028/2029</option></select></div>
+        <div class="form-field"><label>Term</label><select id="teacherResultTerm"><option>First Term</option><option>Second Term</option><option>Third Term</option></select></div>
+      </div>
+      <div class="form-field"><label>Result PDF (max 700 KB)</label><input type="file" id="teacherResultPDF" accept="application/pdf"></div>
+      <button class="success-btn" onclick="uploadTeacherResult()">Upload Result</button>
+      <div id="teacherResultList" style="margin-top:15px;"></div>`;
+    const year = getAcademicYear(); const term = getTerm();
+    const y = document.getElementById("teacherResultYear"); const t = document.getElementById("teacherResultTerm");
+    if (y && Array.from(y.options).some(o => o.value === year)) y.value = year;
+    if (t && Array.from(t.options).some(o => o.value === term)) t.value = term;
+    await refreshTeacherResultList();
+}
+
+async function refreshTeacherResultList() {
+    const list = document.getElementById("teacherResultList");
+    const sel = document.getElementById("teacherResultStudent");
+    if (!list || !sel || !firebaseDb) return;
+    const studentUid = sel.value;
+    const student = teacherRoster.find(s => s.uid === studentUid);
+    if (!student) { list.innerHTML = ''; return; }
+    try {
+        const doc = await firebaseDb.collection("students").doc(studentUid).get();
+        const files = doc.exists ? (doc.data().resultFiles || []) : [];
+        list.innerHTML = files.length ? '<h3>Uploaded results</h3>' + files.map(f => `<div class="student-detail-card"><strong>${escapeHTML(f.name || "Result PDF")}</strong><p>${escapeHTML(f.term || "Academic Result")}</p><small>${escapeHTML(f.uploadedByName ? "Uploaded by " + f.uploadedByName : "Uploaded")}${f.date ? " · " + escapeHTML(f.date) : ""}</small></div>`).join('') : '<div class="empty">No results uploaded for this student yet.</div>';
+    } catch (e) { list.innerHTML = '<div class="empty">Could not load result status. Check Firestore rules.</div>'; }
+}
+
+async function uploadTeacherResult() {
+    if (!currentTeacher || !firebaseDb) { appAlert("Please log in as a teacher first."); return; }
+    const sel = document.getElementById("teacherResultStudent");
+    const input = document.getElementById("teacherResultPDF");
+    const year = document.getElementById("teacherResultYear").value;
+    const termName = document.getElementById("teacherResultTerm").value;
+    const student = teacherRoster.find(s => s.uid === (sel && sel.value));
+    const file = input && input.files && input.files[0];
+    if (!student) { appAlert("Choose a student from your assigned class."); return; }
+    if (!file) { appAlert("Please select a PDF file."); return; }
+    if (file.type !== "application/pdf") { appAlert("Only PDF files are allowed."); return; }
+    if (file.size > MAX_PDF_BYTES) { appAlert("This PDF exceeds 700 KB. Please compress it and try again."); return; }
+    const reader = new FileReader();
+    reader.onerror = () => appAlert("Could not read the PDF. Please try again.");
+    reader.onload = async function(event) {
+        const fid = newFid();
+        const term = year + ", " + termName;
+        const metadata = { fid: fid, name: file.name, term: term, date: new Date().toLocaleString(), uploadedByUid: currentTeacher.uid, uploadedByName: currentTeacher.name || "Class Teacher", uploadedByRole: "teacher" };
+        try {
+            const ref = firebaseDb.collection("students").doc(student.uid);
+            const snap = await ref.get();
+            if (!snap.exists || snap.data().className !== currentTeacher.className) { appAlert("Security check failed: this student is not in your assigned class."); return; }
+            const currentFiles = snap.data().resultFiles || [];
+            await ref.collection("files").doc(fid).set({ name: file.name, data: event.target.result, term: term, uploadedByUid: currentTeacher.uid });
+            await ref.update({ resultFiles: currentFiles.concat([metadata]) });
+            appAlert("Result uploaded successfully. The student can now see it in My Results.");
+            await refreshTeacherResultList();
+        } catch (err) {
+            console.error("Teacher result upload failed:", err);
+            appAlert("Could not upload the result: " + cloudErrorText(err));
+        }
+    };
+    reader.readAsDataURL(file);
+}
 function renderTeacherRows() {
     const rows = document.getElementById("teacherRows");
     if (!rows) return;
