@@ -57,7 +57,7 @@ button {
 ========================================================= */
  
 :root {
-    --blue: #172554;
+      --blue: #172554;
     --dark-blue: #172554;
     --light-blue: #505698;
     --purple-light: #dbeafe;
@@ -1125,6 +1125,22 @@ th {
     }
 }
  
+/* =========================================================
+   ADMIN MENU DRAWER (V16): all admin pages live behind a Menu button
+   ========================================================= */
+.admin-layout { grid-template-columns: 1fr !important; }
+.admin-header-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.admin-menu-btn { border: none; background: rgba(255,255,255,.2); color: #fff; padding: 10px 16px; border-radius: 7px; font-size: 15px; font-weight: bold; cursor: pointer; position: relative; flex-shrink: 0; white-space: nowrap; }
+.admin-menu-btn:hover { background: rgba(255,255,255,.32); }
+.admin-menu-dot { display: none; position: absolute; top: -7px; right: -7px; background: #D80000; color: #fff; border-radius: 12px; min-width: 20px; padding: 1px 6px; font-size: 12px; line-height: 18px; text-align: center; }
+.admin-menu-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.45); z-index: 1900; }
+.admin-menu-overlay.open { display: block; }
+.admin-sidebar { position: fixed !important; top: 0; left: 0; bottom: 0; width: 290px; max-width: 85vw; z-index: 2000; display: block !important; overflow-y: auto !important; overflow-x: hidden !important; transform: translateX(-105%); transition: transform .25s ease; box-shadow: 4px 0 18px rgba(0,0,0,.25); border-right: none !important; border-bottom: none !important; padding: 0 12px 24px !important; background: #fff; }
+.admin-sidebar.open { transform: translateX(0); }
+.admin-sidebar button { min-width: 0 !important; white-space: normal !important; width: 100% !important; display: block; }
+.admin-menu-head { display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: #fff; padding: 18px 6px 12px; margin-bottom: 8px; border-bottom: 1px solid #eee; color: var(--dark-blue); font-size: 20px; font-weight: bold; z-index: 1; }
+.admin-menu-close { cursor: pointer; font-size: 22px; padding: 2px 10px; border-radius: 6px; }
+.admin-menu-close:hover { background: #e9e8ff; }
 </style>
  
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -1738,11 +1754,14 @@ th {
  
     <div class="admin-header">
  
+<div class="admin-header-left">
+<button class="admin-menu-btn" onclick="toggleAdminMenu()" aria-label="Open menu">☰ Menu<span id="menuAlertBadge" class="admin-menu-dot">0</span></button>
         <div class="tss-brand">
             <img src="tss.png" class="tss-brand-logo" alt="Trinity Stars School Crest" onerror="this.style.display='none'">
             <span class="tss-badge" aria-label="Trinity Stars School"><span class="tss-c1">T</span><span class="tss-c2">R</span><span class="tss-c3">I</span><span class="tss-c4">N</span><span class="tss-c5">I</span><span class="tss-c6">T</span><span class="tss-c7">Y</span><span class="tss-rest"> STARS SCHOOL</span></span>
             <span class="tss-sub">Administration Portal</span>
         </div>
+</div>
  
         <button
             class="logout-btn"
@@ -1760,7 +1779,9 @@ th {
  
         <!-- SIDEBAR -->
  
-        <aside class="admin-sidebar">
+<div id="adminMenuOverlay" class="admin-menu-overlay" onclick="closeAdminMenu()"></div>
+<aside class="admin-sidebar" id="adminSidebar">
+<div class="admin-menu-head"><span>☰ Menu</span><span class="admin-menu-close" onclick="closeAdminMenu()" role="button" aria-label="Close menu">✕</span></div>
  
             <button
                 class="active"
@@ -4502,7 +4523,25 @@ async function removeClubMember(clubName, index) {
     saveData();
     openClub(clubName);
 }
+function toggleAdminMenu() {
+    const sb = document.getElementById("adminSidebar");
+    const ov = document.getElementById("adminMenuOverlay");
+    if (!sb || !ov) return;
+    const open = !sb.classList.contains("open");
+    sb.classList.toggle("open", open);
+    ov.classList.toggle("open", open);
+}
+function closeAdminMenu() {
+    const sb = document.getElementById("adminSidebar");
+    const ov = document.getElementById("adminMenuOverlay");
+    if (sb) sb.classList.remove("open");
+    if (ov) ov.classList.remove("open");
+}
+document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") closeAdminMenu();
+});
 function adminPage(page, button) {
+    closeAdminMenu();
  
     document
         .querySelectorAll(".admin-sidebar button")
@@ -5118,7 +5157,7 @@ function showAddStudentForm(className) {
  
  
                 <div class="form-field">
-                    <label>Email</label>
+                    <label>Email (can be the same as a brother's, sister's or parent's)</label>
                     <input
                         type="email"
                         id="newEmail"
@@ -7457,12 +7496,6 @@ function renderReports() {
             <div class="stat-card"><div>Fees Collected This Term</div><div class="stat-number" style="font-size:24px;">${money(termPaid)}</div></div>
             <div class="stat-card"><div>Total Fees Outstanding</div><div class="stat-number" style="font-size:24px;">${money(totalFees-totalPaid)}</div></div>
         </div>
-        <div class="admin-card"><h2>Student Population by Class</h2>
-            <div class="table-wrapper"><table><thead><tr><th>Class</th><th>Students</th></tr></thead><tbody>
-            ${CLASS_LAYOUT.map(g=>`<tr><td>${g.grade}</td><td>${students.filter(s=>gradeOf(s.className||"")===g.grade).length}</td></tr>`).join("")}
-            <tr><th>Total Students in School</th><th>${totalStudents}</th></tr>
-            </tbody></table></div>
-        </div>
         <div class="admin-card"><h2>Fees Summary</h2>
             <p>Total fees billed: <strong>${money(totalFees)}</strong></p>
             <p style="margin-top:10px;">Total collected to date: <strong>${money(totalPaid)}</strong></p>
@@ -9255,6 +9288,8 @@ function updateAlertBadge() {
     const n = adminAlerts.filter(function (a) { return !a.read; }).length;
     badge.textContent = n;
     badge.style.display = n ? "inline-block" : "none";
+    const menuDot = document.getElementById("menuAlertBadge");
+    if (menuDot) { menuDot.textContent = n; menuDot.style.display = n ? "inline-block" : "none"; }
 }
  
 // If a student changed their email but could not update their own login lookup, the admin fixes it here.
